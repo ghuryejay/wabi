@@ -10,10 +10,12 @@ After this is done, build using makefile.
 
 VC_algo requires 2 parameters from command line viz., path to gml file and filtering number for centrality. 
 Run it as follows:
+
 ./vc_algo path_to_gml filtering_number
 
 Samling algo requires 3 parameters viz. path to gml, filtering number and number of sample nodes.
 Run it as follows:
+
 ./sampling_algo path_to_gml filtering_nubmer no_of_samples
 
 Output produced by both is a .repeats file. It has information in following form:
