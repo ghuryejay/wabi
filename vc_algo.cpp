@@ -13,6 +13,7 @@
 #include <string>
 #include <numeric>
 #include <map>
+#include <algorithm>
 
 #include <NetworKit/graph/Graph.h>
 #include <NetworKit/io/GMLGraphReader.h>
@@ -45,6 +46,8 @@ int main(int argc, char* argv[]) {
 		}
 		if(str.find("label") != string::npos) {
 			label = str.substr(10);
+			label.erase(0,1);
+			label.erase(label.length()-1);
 			labelmap[id] = label;
 		}
 	}
