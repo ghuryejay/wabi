@@ -19,19 +19,20 @@ def main():
 	true_negative = 0
 	false_negative = 0
 	lines = r_file.readlines()
+	revcompl = lambda x: ''.join([{'A':'T','C':'G','G':'C','T':'A'}[B] for B in x][::-1])
 	for line in lines:
 		attrs = line.split("\t")
-		label = attrs[3]
+		label = attrs[2]
 		isrepeat = int(attrs[-1][:-1])
 		label = label.strip("\"")
 		cnt = 0
 		for key in genome_map:
-			genome = genomo_map[key]
-			if label in genome:
+			genome = genome_map[key]
+			if label in genome or revcompl(label) in genome:
 				cnt += 1
 		if cnt > 1 and isrepeat == 1:
 			true_positive += 1
-		if cnt > 1 and isrepeat = 0:
+		if cnt > 1 and isrepeat == 0:
 			false_positive += 1
 		if cnt == 1 and isrepeat == 1:
 			false_negative += 1
@@ -42,6 +43,10 @@ def main():
 
 	print "sensitivity = " + str(sensitivity)
 	print "specificity = " + str(specificity)
+	print "true positives = " + str(true_positive)
+	print "true negatives = " +str(true_negative)
+	print "false positives = " + str(false_positive)
+	print "false negatives = " + str(false_negative)
 
 
 if __name__ == "__main__":

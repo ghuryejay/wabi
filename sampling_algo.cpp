@@ -73,10 +73,12 @@ int main(int argc, char* argv[]) {
 	cerr<<"bound: "<<mean + filterparam*stdev<<endl;
 	double bound = mean + filterparam*stdev;
 	for (int i = 0; i < g.nodes().size(); i++) {
+		int isrepeat = 0;
 		if(nodeRanks.at(i).second >= bound){
-			string String = static_cast<ostringstream*>( &(ostringstream() << nodeRanks.at(i).first) )->str();
-			cout << nodeRanks.at(i).first <<"\t"<< nodeRanks.at(i).second<<"\t"<<labelmap[String]<< endl;
+			isrepeat = 1;
 		}
+		string String = static_cast<ostringstream*>( &(ostringstream() << nodeRanks.at(i).first) )->str();
+		cout << nodeRanks.at(i).first <<"\t"<< nodeRanks.at(i).second<<"\t"<<labelmap[String]<<isrepeat<< endl;
 	}
 	cerr << "Execution Time = " << (double) (clock() - start) / CLOCKS_PER_SEC
 			<< endl;
