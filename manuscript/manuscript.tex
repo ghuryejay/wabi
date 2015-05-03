@@ -101,6 +101,8 @@ Metagenomics is a direct sequencing of DNA from all organisms in an environment 
 Metagenomic data are considerably more complex. The assembly of metagenomic data is complicated due to several reasons. Few of them are: (i) widely different levels of representation for different organisms in a community; (ii) genomic variation between closely related organisms; (iii) conserved genomic regions shared by distantly related organims; and (iv) repetitive sequences within individual genomes. Genomic repeats are the major challenge when assembling isolated genomes and their effect is prominently seen in metagenomic datasets. It has been show by Kingsford et al.\cite{kingsford} that the number of reconstructions grow exponentially with the number of repeats. Therefore it is impossible find one correct solution for assembly. There are several approaches such as \cite{bambus} to find repeats in metagenomic data. The main drawback of these methods is that they do not scale well as number of nodes in assembly graph increase and prove very inefficient as number of nodes reaches to about a million. To tackle this problem, we explore some of the work in social network analysis, particularly in the area of node centrality. We make use of betweenness centrality to find out repeats in assembly graph. 
 
 \section{Related Work}
+
+\subsection*{Betweenness Centrality}
 In graph theory and network analysis, indicators of centrality identify the most important vertices within a graph.Several metrics to measure centrality have been proposed. We make use of betweenness centrality. For a particular node, betweenness centrality is equal to the number of shortest paths from all vertices to all others that pass through that node. Formally, for a node $v$, it is defined by following expression:
 
 $$g(v) = \sum_{s \neq t \neq v} \frac{\sigma_{st}(v)}{\sigma_{st}}$$
@@ -113,6 +115,7 @@ $$\delta_{s}(v) = \sum_{w \in succ(v)} \frac{\sigma_{sv}}{\sigma_{sw}}(1+\delta_
 where $\delta_{s}(v) = \frac{\sigma_{st}(v)}{\sigma_{st}}$ and $succ(v)$ is an immediate successor of $v$  in the shortest path DAG.   
 This algorithm takes time $\Theta(mn)$ for unit edge weight graphs and $\Theta(mn + n^{2}log(n))$ for weighted graphs. This algorithm does not scale well with large networks with millions of nodes and edges. Bader and Madduri\cite{bader} provide a massively parallel implementation of the exact algorithm. However this approach scales to about a few million nodes. 
 
+\subsection*{Betweenness Centrality Based on Sampling Nodes}
 Due to scalability limitations of exact betweenness centrality, several approximation algorithms for betweenness centrality have been proposed. Bader and Pich\cite{bp} provide an approximation algorithm by extrapolating from a subset of $k$ starting nodes called pivots and using same aggregation strategy as exact betweeness algorithm. However, this algorithm overestimates the centrality of some unimportant nodes which lie near pivot. The approximation algorithm proposed in \cite{sanders} comes over this drawback by changing the scheme for aggregating betweenness contributions so that nodes do not get profited just because they are near pivot. They define an estimator for betweenness centrality. This estimator is characterized by a length function $l : E \Rightarrow \mathbb{R}$ on the edges and a scaling function $f : [0,1] \Rightarrow [0,1]$. For a path $P = (e_{1},e_{2}...,e_{k})$ let $l(P) := \sum_{1 \leq i \leq k} l(e_{i})$. Let $n$ be the number of sample nodes chosen from a graph. The algorithm works as follows: In each iteration one of $2n$ shortest path searches is performed with uniform probability $1/2n$. An iteration can be a forward search in $G = (V,E)$ from a pivot $s \in V$ ($|V| = n$) or backward search from a pivot $t \in V$, that is a search from $t$ in $(V,{(v,u) : (u,v) \in E})$. For each shortest path of the form 
 $$ P = (\overbrace{s,...,v}^{Q},..,t)$$ 
 a scaled contribution is defined as follows:\\
@@ -139,6 +142,7 @@ To compute the contributions of nodes to centrality, a modified scheme of Brande
 $$\delta_{s}(v) = \sum_{w \in succ(v)} \frac{\mu(s,v)}{\mu(s,w)}.\frac{\sigma_{sv}}{\sigma_{sw}}(1+\delta_{s}(w))$$
 where $\mu(s,w)$ is the shortest path distance from $s$ to $w$. It uses $\frac{\mu(s,v)}{\mu(s,w)}$ in aggregation instead of $1$ in Brandes algorithm. 
 
+\subsection*{Betweenness Centrality Based on Sampling Shortest Paths}
 There  is another approximation algorithm was proposed by Matteo et al. \cite{matteo} based on randomized sampling of shortest paths and offer probabilistic guarantees on the quality of approximation. This algorithm guarantees that all approximate values of betweenness for all vertices are within an additive factor $\epsilon \in (0,1)$ from the real values with probability at least $1-\delta$. To derive bounds on sample size, results from VC dimension\cite{vc} theory are used. The main advantage of this algorithm is that the sample size does not depend on the size of the graph, but only on the maximum number vertices in a shortest path which is called \textit{vertex diameter}.  
 
 The Vapnik-Chernovenkis(VC) dimensions of a class of subset is defined on a set of points is a measure of expressiveness of such class. Given a probability distribution on the set of points, a finite bound on the VC-dimension of the class of subsets implies a bound on the number of random samples required to approximate the probability of each subset in the class with its empirical average. To define this formally, let $D$ be a domain and $R$ be a collection of subsets from $D$. We call $R$ a \textit{range set} on $D$. Given $B \subseteq D$, the projection of $R$ on $B$ is the set of $P_{R}(B) = \{B \cap A : A \in R\}$.We say that the set $B$ is \textit{shattered} by $R$ if $P_{R}(B) = 2^{B}$, where $2^{B}$ is the powerset of $B$.
@@ -174,14 +178,14 @@ r = \frac{c}{\epsilon^{2}}(\left\lfloor{log_{2}(VD(G) - 2)}\right\rfloor + 1 + l
 \end{equation}
 This sample size achieves desired accuracy with the desired confidence. The algorithm repeats following steps $r$ times: 1. It samples a pair of $u,v$ of distinct vertices uniformly at random. 2. It computes set $S_{uv}$ or all shortest paths between $u$ and $v$. 3. It selects path $p$ from $S_{uv}$ at random. 4. It increases by $1/r$ the betweenness estimation of each vertex in $Int(p)$. If sampled vertices $u$ and $v$ are not connected, steps 3 and 4 can be skipped. 
 
-There are two crucial things in this algorithm. First is computing approximate vertex diameter. Calculating exact VD(G) will need to solve all pair shortest  path problem. The complexity of this algorithm is $O(V^{2}logV + VE)$ by Johnson's algorithm(cite) and $\Theta(V^{3})$ by Floyd-Warshall algorithm. This would be very slow. A faster linear time 2-approximation algorithm is proposed in \cite{matteo}. It is as follows:
+There are two crucial things in this algorithm. First is computing approximate vertex diameter. Calculating exact VD(G) will need to solve all pair shortest  path problem. The complexity of this algorithm is $O(V^{2}logV + VE)$ by Johnson's algorithm\cite{johnson} and $\Theta(V^{3})$ by Floyd-Warshall algorithm. This would be very slow. A faster linear time 2-approximation algorithm is proposed in \cite{matteo}. It is as follows:
 \begin{itemize}
 \item Select $v \in V$ at random
 \item Compute shortest path from $v$ to all vertices in $V$
 \item Finally take $VD(G)$ be the sum of lengths of two shortest paths with maximum size from $v$ to two distinct nodes $u$ and $w$. 
 \end{itemize}
 
-Second is to sample shortest paths. They way a random shortest path from $S_{uv}$ is inspired by Brandes algorithm(cite). Assume that $u$ and $v$ are connected. For each vertex $w$, let $P_{u}(w)$ be a subset of neighbors of $w$ which are predecessors of $w$ along the shortest path from $u$ to $w$. Let $p^{*}$ be the sampled shortest path that we build backwards starting from the endpoint $v$ and by adding sampled predecessors before $v$. Initially $p^{*} = {v}$. Starting from $v$, we select it's predecessor $z \in P_{u}(v)$ using weighted random sampling. Each $z \in P_{u}(v)$ has probability $\sigma_{uz}/\sum_{w \in P_{u}(v)}\sigma_{uv} = \sigma_{uz}/\sigma_{uv}$. We add $z$ to $p^{*}$ and repeat this procedure until $z \neq u$. In the end, we have single shortest path sampled from $S_{uv}$. 
+Second is to sample shortest paths. They way a random shortest path from $S_{uv}$ is inspired by Brandes algorithm\cite{brandes}. Assume that $u$ and $v$ are connected. For each vertex $w$, let $P_{u}(w)$ be a subset of neighbors of $w$ which are predecessors of $w$ along the shortest path from $u$ to $w$. Let $p^{*}$ be the sampled shortest path that we build backwards starting from the endpoint $v$ and by adding sampled predecessors before $v$. Initially $p^{*} = {v}$. Starting from $v$, we select it's predecessor $z \in P_{u}(v)$ using weighted random sampling. Each $z \in P_{u}(v)$ has probability $\sigma_{uz}/\sum_{w \in P_{u}(v)}\sigma_{uv} = \sigma_{uz}/\sigma_{uv}$. We add $z$ to $p^{*}$ and repeat this procedure until $z \neq u$. In the end, we have single shortest path sampled from $S_{uv}$. 
  
 \begin{algorithm}
 \caption{Algorithm to compute approximate betweenness centrality}
@@ -237,35 +241,12 @@ We modify the de Bruijn graph generated from genomes to identify repeats in a be
 \end{figure}
 
 \subsection*{Networkit}
-We investigated the performance of approximate betweenness centrality algorithms on the metagenomic graphs. We used the implementation in Networkit\cite{networkit} library. Its a c++ library with parallel implementation of many graph algorithms. We used the implementation of approximate betweenness centrality algorithm by (cite matteo). This algorithm is implemented in parallel.We also investigated the performance of algorithm by (cite other) on graphs. This algorithm is not parallelized. It takes number of sample nodes as an input. 
+We investigated the performance of approximate betweenness centrality algorithms on the metagenomic graphs. We used the implementation in Networkit\cite{networkit} library. Its a c++ library with parallel implementation of many graph algorithms. We used the implementation of approximate betweenness centrality algorithm by\cite{matteo}. This algorithm is implemented in parallel.We also investigated the performance of algorithm by (cite other) on graphs. This algorithm is not parallelized. It takes number of sample nodes as an input. 
 
 \subsection*{Cutoff Criteria For Repeats}
 To determine which nodes in a graph should be marked as repeats, we define a criteria based on the value of centrality calculated by the algorithm. Let $x$ be the mean of centralities of all the nodes and $\sigma$ be the standard deviation. A node $v$ is marked as repeat only if the following condition holds: $b(v) \geq x + c*\sigma$ where $c$ is a constant and $b(v)$ is betweenness centrality of the node. We set value of $c$ as 3 as it works out the best. 
 
-\begin{thebibliography}{4}
+\bibliography{manuscript}{}
+\bibliographystyle{abbrv}
 
-
-\bibitem{kingsford} Kingsford, Carl, Michael C. Schatz, and Mihai Pop. "Assembly complexity of prokaryotic genomes using short reads." BMC bioinformatics 11.1 (2010).
-
-\bibitem{bambus} Koren, Sergey, Todd J. Treangen, and Mihai Pop. "Bambus 2: scaffolding metagenomes." Bioinformatics 27.21 (2011): 2964-2971.
-
-\bibitem{brandes} Brandes, Ulrik. "A faster algorithm for betweenness centrality*." Journal of Mathematical Sociology 25.2 (2001): 163-177.
-
-\bibitem{bader} Madduri, Kamesh, et al. "A faster parallel algorithm and efficient multithreaded implementations for evaluating betweenness centrality on massive datasets." Parallel \& Distributed Processing, 2009. IPDPS 2009. IEEE International Symposium on. IEEE, 2009.
-
-\bibitem{bp} Bader, David A., et al. "Approximating betweenness centrality." Algorithms and Models for the Web-Graph. Springer Berlin Heidelberg, 2007. 124-137.
-
-\bibitem{sanders}Geisberger, Robert, Peter Sanders, and Dominik Schultes. "Better Approximation of Betweenness Centrality." ALENEX. 2008.
-
-\bibitem{matteo} Riondato, Matteo, and Evgenios M. Kornaropoulos. "Fast approximation of betweenness centrality through sampling." Proceedings of the 7th ACM international conference on Web search and data mining. ACM, 2014.
-
-\bibitem{vc} V. N. Vapnik and A. J. Chervonenkis. On the uniform convergence of relative frequencies of events
-to their probabilities. Theory of Probability and its Applications, 16(2):264–280, 1971. doi: 10.1137/
-1116025.
-
-\bibitem{debruijn} Kleene, Stephen Cole, et al. "Introduction to metamathematics." (1952).
-
-\bibitem{networkit} Staudt, Christian L., Aleksejs Sazonovs, and Henning Meyerhenke. "Networkit: An interactive tool suite for high-performance network analysis." arXiv preprint arXiv:1403.3005 (2014).
-
-\end{thebibliography}
 \end{document}
