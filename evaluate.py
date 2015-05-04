@@ -33,9 +33,9 @@ def main():
 		if cnt > 1 and isrepeat == 1:
 			true_positive += 1
 		if cnt > 1 and isrepeat == 0:
-			false_positive += 1
-		if cnt == 1 and isrepeat == 1:
 			false_negative += 1
+		if cnt == 1 and isrepeat == 1:
+			false_positive += 1
 		if cnt == 1 and isrepeat == 0:
 			true_negative += 1
 	
