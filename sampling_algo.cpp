@@ -32,6 +32,7 @@ int main(int argc, char* argv[]) {
 	filepath = argv[1];
 	filterparam = atoi(argv[2]);
 	sampleNodes = atoi(argv[3]);
+	string repeat_file = argv[4];
 	clock_t start = clock();
 	GMLGraphReader reader;
 	Graph g = reader.read(argv[1]);
@@ -62,7 +63,7 @@ int main(int argc, char* argv[]) {
 	centrality.run();
 	ofstream myfile;
 	filepath = filepath.substr(0,filepath.length()-4);
-	myfile.open(filepath+".repeats");
+	myfile.open(repeat_file);
 	vector<pair<node, double>> nodeRanks(g.nodes().size());
 	nodeRanks = centrality.ranking();
 	vector<double> scores = centrality.scores();
