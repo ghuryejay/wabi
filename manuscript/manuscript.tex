@@ -242,7 +242,18 @@ We modify the de Bruijn graph generated from genomes to identify repeats in a be
 We investigated the performance of approximate betweenness centrality algorithms on the metagenomic graphs. We used the implementation in Networkit\cite{networkit} library. Its a c++ library with parallel implementation of many graph algorithms. We used the implementation of approximate betweenness centrality algorithm by\cite{matteo}. This algorithm is implemented in parallel.We also investigated the performance of algorithm by (cite other) on graphs. This algorithm is not parallelized. It takes number of sample nodes as an input. 
 
 \subsection*{Cutoff Criteria For Repeats}
-To determine which nodes in a graph should be marked as repeats, we define a criteria based on the value of centrality calculated by the algorithm. Let $x$ be the mean of centralities of all the nodes and $\sigma$ be the standard deviation. A node $v$ is marked as repeat only if the following condition holds: $b(v) \geq x + c*\sigma$ where $c$ is a constant and $b(v)$ is betweenness centrality of the node. We set value of $c$ as 3 as it works out the best. 
+To determine which nodes in a graph should be marked as repeats, we define a criteria based on the value of centrality calculated by the algorithm. Let $x$ be the mean of centralities of all the nodes and $\sigma$ be the standard deviation. A node $v$ is marked as repeat only if the following condition holds: $b(v) \geq x + c*\sigma$ where $c$ is a constant and $b(v)$ is betweenness centrality of the node. We set value of $c$ as 3 as it works out the best.
+
+\section{Results} 
+We evaluated algorithms for betweenness centrality to find inter-genome repeats on real datasets described above. We use the notion of sensitivity and specificity to define the accuracy of repeat detection. We define following terms:
+\begin{itemize}
+\item \textbf{True positives:} Number of nodes marked as repeat that is found within at least 2 genomes
+\item \textbf{False positives:} Number of nodes marked as repeat that is only repetitive within a single genome
+\item \textbf{True negatives:} Number of nodes marked as non-repeat that is only repetitive within a single genome
+\item \textbf{False negatives:} Number of nodes marked as non-repeat that is found within at least 2 genomes
+\end{itemize}
+
+A good repeat detection should have both good sensitivity and specificity. Sensitivity reflects how many true repeats are detected. Detecting to few repeats can lead to assembly errors in scaffolding. Specificity reflects the false positives. Detecting too many repeats leads to a suboptimal assembly as these contigs do not fully participate in scaffolding. 
 
 \bibliography{manuscript}{}
 \bibliographystyle{abbrv}
