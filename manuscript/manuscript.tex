@@ -239,7 +239,20 @@ We modify the de Bruijn graph generated from genomes to identify repeats in a be
 \end{figure}
 
 \subsection*{Networkit}
-We investigated the performance of approximate betweenness centrality algorithms on the metagenomic graphs. We used the implementation in Networkit\cite{networkit} library. Its a c++ library with parallel implementation of many graph algorithms. We used the implementation of approximate betweenness centrality algorithm by\cite{matteo}. This algorithm is implemented in parallel.We also investigated the performance of algorithm by (cite other) on graphs. This algorithm is not parallelized. It takes number of sample nodes as an input. 
+We investigated the performance of approximate betweenness centrality algorithms on the metagenomic graphs to find inter-genome repeats. We used the implementation in Networkit\cite{networkit} library. It provides implementation for various graph algorithms. We are particularly interested in the implementation of betweenness centrality algorithms. We make use of two approximate betweenness centrality algorithms provided by NetworKit. 
+
+NetworKit provides fast parallel implementation of approximate betweenness centrality algorithm by Matteo et al. \cite{matteo}. The implementation first approximates diameter of of graph. After this, it calculates the number of shortest paths to be sampled. It processes shortest paths in the sample in parallel in multithreaded fashion and then aggregates the centrality scores for each shortest paths once every thread finishes processing of shortest path assigned to it. 
+
+We also investigate the performance of algorithm by Geisberger et al. \cite{sanders}. NetworKit provides single threaded implementation of this algorithm. It first creates a sample of $n$ nodes at random from a given graph. It then runs single source shortest path algorithm for each of those nodes. It calculates the betweenness scores for each node by the modified aggregation scheme proposed in the algorithm. 
+
+Here are few questions we want to investigate based on these algorithms:
+
+\begin{itemize}
+\item \textbf{Scalability}: How these algorithms scale on large metagenomic repeats graph? Does parallelized algorithm provides quick results or taking sample of fewer nodes provides quick results?
+\item \textbf{Accuracy}: Which of these algorithms provides better accuracy while determining inter-genomic repeats?
+\item \textbf{Sample Size}: For the algorithm by Geisberger et al. \cite{sanders}, how should a sample size be defined so that it would produce fast and accurate results? We try to come up with a heuristic to define sample size
+\end{itemize}
+
 
 \subsection*{Cutoff Criteria For Repeats}
 To determine which nodes in a graph should be marked as repeats, we define a criteria based on the value of centrality calculated by the algorithm. Let $x$ be the mean of centralities of all the nodes and $\sigma$ be the standard deviation. A node $v$ is marked as repeat only if the following condition holds: $b(v) \geq x + c*\sigma$ where $c$ is a constant and $b(v)$ is betweenness centrality of the node. We set value of $c$ as 3 as it works out the best.
