@@ -38,15 +38,19 @@ def main():
 			false_negative += 1
 		if cnt == 1 and isrepeat == 0:
 			true_negative += 1
+	
+	
+        print "true positives = " + str(true_positive)
+        print "true negatives = " +str(true_negative)
+        print "false positives = " + str(false_positive)
+        print "false negatives = " + str(false_negative)
+	
 	sensitivity = true_positive*1.0/(true_positive + false_negative)
 	specificity = true_negative*1.0/(true_negative + false_positive)
 
 	print "sensitivity = " + str(sensitivity)
 	print "specificity = " + str(specificity)
-	print "true positives = " + str(true_positive)
-	print "true negatives = " +str(true_negative)
-	print "false positives = " + str(false_positive)
-	print "false negatives = " + str(false_negative)
+	
 
 
 if __name__ == "__main__":
