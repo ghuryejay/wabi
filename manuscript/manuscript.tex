@@ -84,11 +84,8 @@ Tiergartenstr. 17, 69121 Heidelberg, Germany\\
 
 
 \begin{abstract}
-The abstract should summarize the contents of the paper and should
-contain at least 70 and at most 150 words. It should be written using the
-\emph{abstract} environment.
-\keywords{We would like to encourage you to list your keywords within
-the abstract section}
+Assembling metagenomic data is a challenging task due to several reasons. One of the reasons that complicates assembly is the sequences shared between the genomes of multiple organisms. Such regions in genomes are called repeats. Repeats make assembly difficult because they link the unrelated sections of genomes. It has been shown that the number of reconstructions of genome grows exponentially with repeats. Existing approaches to identify repeats are inefficient and do not scale well as size of data increases. We propose an application of a core concept in social network analysis called betweenness centrality to metagenomic data to identify inter-genomic repeats. We study how approximation algorithms for betweenness centrality can be useful to find central nodes quickly and propose a novel approach to identify inter-genomic repeats accurately. 
+\keywords{Metagenomics, Algorithms, Centrality, Graph}
 \end{abstract}
 
 
@@ -267,6 +264,8 @@ We evaluated algorithms for betweenness centrality to find inter-genome repeats 
 \end{itemize}
 
 A good repeat detection should have both good sensitivity and specificity. Sensitivity reflects how many true repeats are detected. Detecting to few repeats can lead to assembly errors in scaffolding. Specificity reflects the false positives. Detecting too many repeats leads to a suboptimal assembly as these contigs do not fully participate in scaffolding. 
+
+\section{Conclusion}
 
 \bibliography{manuscript}{}
 \bibliographystyle{abbrv}
