@@ -41,12 +41,12 @@ def main():
 		if cnt == 1 and isrepeat == 0:
 			true_negative += 1
 	
-	runfile = open("runtime","rb")
+	runfile = open(repeat_file+".runtime","rb")
 	line = runfile.readline()
 #	print order nodes/epsilon	runtime	true_pos	true_neg	false_pos	false_neg	
         line = line.strip("\n")
 	print str(param) + "\t" + line + "\t" + str(true_positive) + "\t" + str(true_negative) + "\t" + str(false_positive) + "\t" + str(false_negative)
-	os.remove("runtime")
+	os.remove(repeat_file+".runtime")
 	
 
 

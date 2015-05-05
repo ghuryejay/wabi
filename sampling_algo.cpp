@@ -77,7 +77,7 @@ int main(int argc, char* argv[]) {
 	double bound = mean + filterparam*stdev;
 
 	ofstream runfile;
-        runfile.open("runtime");
+        runfile.open(repeat_file+".runtime");
         runfile << (double) (clock() - start) / CLOCKS_PER_SEC << endl;
 
 	for (int i = 0; i < g.nodes().size(); i++) {
