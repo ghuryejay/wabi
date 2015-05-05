@@ -65,15 +65,22 @@ int main(int argc, char* argv[]) {
 	vector<pair<node, double>> nodeRanks(g.nodes().size());
 	nodeRanks = centrality.ranking();
 	vector<double> scores = centrality.scores();
-
+	vector<double> scores1 = scores;
+	sort(scores1.begin(),scores1.end());
 	double sum = std::accumulate(scores.begin(), scores.end(), 0.0);
 	double mean = sum / scores.size();
+	int first_quartile = scores1.size()/4;
+	int median = scores1.size()/2;
+	int third_quartile = first_quartile + median;
+	double range = scores1.at(third_quartile) - scores1.at(first_quartile);
+	double filter = scores1.at(third_quartile) + 1.5*range;
 
 	double sq_sum = std::inner_product(scores.begin(), scores.end(), scores.begin(), 0.0);
 	double stdev = std::sqrt(sq_sum / scores.size() - mean * mean);
 	cerr<<"Mean: "<<mean<<endl;
 	cerr<<"Std Dev: "<<stdev<<endl;
 	cerr<<"bound: "<<mean + filterparam*stdev<<endl;
+	cerr<<"filter: "<<filter<<endl;
 	double bound = mean + filterparam*stdev;
 	for (int i = 0; i < g.nodes().size(); i++) {
 		int isrepeat = 0;
