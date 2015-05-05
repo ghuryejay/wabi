@@ -26,7 +26,6 @@ using namespace NetworKit;
 int main(int argc, char* argv[]) {
 
 	string filepath;
-	cout<<argv[1]<<endl;
 	int filterparam;
 	int sampleNodes;
 	filepath = argv[1];
