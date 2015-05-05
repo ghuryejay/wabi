@@ -84,8 +84,9 @@ int main(int argc, char* argv[]) {
 	cerr<<"bound: "<<mean + filterparam*stdev<<endl;
 	cerr<<"filter: "<<filter<<endl;
 	double bound = mean + filterparam*stdev;
-	cerr << "Execution Time = " << (double) (clock() - start) / CLOCKS_PER_SEC
-                        << endl;
+	ofstream runfile;
+	runfile.open("runtime");
+	runfile << (double) (clock() - start) / CLOCKS_PER_SEC << endl;
 
 	for (int i = 0; i < g.nodes().size(); i++) {
 		int isrepeat = 0;

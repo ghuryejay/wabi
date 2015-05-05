@@ -9,4 +9,4 @@
 
 ./vc_algo $1 $2 $3 $4
 
-python evaluate.py $5 $4
+python evaluate.py $5 $4 $3

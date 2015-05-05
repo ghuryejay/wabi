@@ -1,10 +1,12 @@
 import sys
+import os
 
 def main():
 	fasta_file = sys.argv[1]
 	repeat_file = sys.argv[2]
 	f_file = open(fasta_file,"rb")
 	r_file = open(repeat_file,"rb")
+	param = sys.argv[3]
 	genome_map = {}
 	lines = f_file.readlines()
 	key = ""
@@ -39,17 +41,12 @@ def main():
 		if cnt == 1 and isrepeat == 0:
 			true_negative += 1
 	
-	
-        print "true positives = " + str(true_positive)
-        print "true negatives = " +str(true_negative)
-        print "false positives = " + str(false_positive)
-        print "false negatives = " + str(false_negative)
-	
-	sensitivity = true_positive*1.0/(true_positive + false_negative)
-	specificity = true_negative*1.0/(true_negative + false_positive)
-
-	print "sensitivity = " + str(sensitivity)
-	print "specificity = " + str(specificity)
+	runfile = open("runtime","rb")
+	line = runfile.readline()
+#	print order nodes/epsilon	runtime	true_pos	true_neg	false_pos	false_neg	
+        line = line.strip("\n")
+	print str(param) + "\t" + line + "\t" + str(true_positive) + "\t" + str(true_negative) + "\t" + str(false_positive) + "\t" + str(false_negative)
+	os.remove("runtime")
 	
 
 
