@@ -2,11 +2,11 @@
 
 # mix_graph = $1
 #cutoff = $2
-#repeat_file = $3
-#fasta_file = $4
+#epsilon = $3
+#repeat_file = $4
+#fasta_file = $5
 
-make
 
-./vc_algo $1 $2 $3
+./vc_algo $1 $2 $3 $4
 
-python evaluate.py $4 $3
+python evaluate.py $5 $4

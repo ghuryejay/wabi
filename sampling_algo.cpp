@@ -76,6 +76,9 @@ int main(int argc, char* argv[]) {
 	cerr<<"Std Dev: "<<stdev<<endl;
 	cerr<<"bound: "<<mean + filterparam*stdev<<endl;
 	double bound = mean + filterparam*stdev;
+	 cerr << "Execution Time = " << (double) (clock() - start) / CLOCKS_PER_SEC
+                        << endl;
+
 	for (int i = 0; i < g.nodes().size(); i++) {
 		int isrepeat = 0;
 		if(nodeRanks.at(i).second >= bound){
@@ -84,8 +87,7 @@ int main(int argc, char* argv[]) {
 		string String = static_cast<ostringstream*>( &(ostringstream() << nodeRanks.at(i).first) )->str();
 		myfile << nodeRanks.at(i).first <<"\t"<< nodeRanks.at(i).second<<"\t"<<labelmap[String]<<"\t"<<isrepeat<< endl;
 	}
-	cerr << "Execution Time = " << (double) (clock() - start) / CLOCKS_PER_SEC
-			<< endl;
+
 	return 0;
 }
 

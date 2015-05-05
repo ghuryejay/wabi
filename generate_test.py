@@ -1,5 +1,6 @@
 import sys
 
+
 def main():
 	fasta_file = sys.argv[1]
 	repeat_file = sys.argv[2]
@@ -14,10 +15,11 @@ def main():
 		if line[0] == '>':
 			key = line
 		else:
+			print len(line)
 			genome_map[key] = line
-	
 	lines = r_file.readlines()
 	revcompl = lambda x: ''.join([{'A':'T','C':'G','G':'C','T':'A'}[B] for B in x][::-1])
+	node = 0
 	for line in lines:
 		attrs = line.split("\t")
 		label = attrs[2]
@@ -26,14 +28,15 @@ def main():
 		cnt = 0
 		for key in genome_map:
 			genome = genome_map[key]
-			if label in genome or revcompl(label) in genome:
+			if genome.find(label) == True or genome.find(revcompl(label)):
 				cnt += 1
 		repeat_map[label] = cnt
+		print node
+		node += 1
 	
-	
-    ofile = open(sys.argv[3],"rb")
-    for key in repeat_map:
-    	ofile.write(str(key)+"\t"+str(repeat_map[key])+"\n")
+    	ofile = open(sys.argv[3],"w")
+    	for key in repeat_map:
+    		ofile.write(str(key)+"\t"+str(repeat_map[key])+"\n")
 	
 
 
