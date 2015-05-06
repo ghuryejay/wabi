@@ -8,6 +8,7 @@ def main():
         r_file = open(repeat_file,"rb")
         param = sys.argv[2]
         map_file = sys.argv[3]
+	rt_file = sys.argv[4]
 	rep_map = {}
 	mf = open(map_file,"rb")
 	lines = mf.readlines()
@@ -51,12 +52,12 @@ def main():
                 if cnt == 1 and isrepeat == 0:
                         true_negative += 1
 
-        runfile = open(repeat_file+".runtime","rb")
+        runfile = open(rt_file,"rb")
         line = runfile.readline()
       	# print order nodes/epsilon       runtime true_pos        true_neg        false_pos       false_neg       
         line = line.strip("\n")
 	print str(param) + "\t" + line + "\t" + str(true_positive) + "\t" + str(true_negative) + "\t" + str(false_positive) + "\t" + str(false_negative)
-        os.remove(repeat_file+".runtime")
+        os.remove(rt_file)
 
 
 
