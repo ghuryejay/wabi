@@ -32,6 +32,7 @@ int main(int argc, char* argv[]) {
 	filterparam = atoi(argv[2]);
 	sampleNodes = atoi(argv[3]);
 	string repeat_file = argv[4];
+	string rt_file = argv[5];
 	clock_t start = clock();
 	GMLGraphReader reader;
 	Graph g = reader.read(argv[1]);
@@ -77,7 +78,7 @@ int main(int argc, char* argv[]) {
 	double bound = mean + filterparam*stdev;
 
 	ofstream runfile;
-        runfile.open(repeat_file+".runtime");
+        runfile.open(rt_file);
         runfile << (double) (clock() - start) / CLOCKS_PER_SEC << endl;
 
 	for (int i = 0; i < g.nodes().size(); i++) {
