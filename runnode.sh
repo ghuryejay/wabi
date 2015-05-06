@@ -4,8 +4,7 @@
 #cutoff = $2
 #nodes = $3
 #repeat_file = $4
-#fasta_file = $5
-
+#map fie = $5
 ./sampling_algo $1 $2 $3 $4
 
-python evaluate.py $5 $4 $3
+python evaluate1.py  $4 $3 $5
