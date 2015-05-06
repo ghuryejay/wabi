@@ -27,11 +27,12 @@ using namespace NetworKit;
 int main(int argc, char* argv[]) {
 
 	string filepath;
-	cout<<argv[1]<<endl;
 	int filterparam;
 	filepath = argv[1];
 	filterparam = atoi(argv[2]);
-	string repeat_file = argv[3];
+	string eps = argv[3];
+	double epsilon = (double)atof(eps.c_str());
+	string repeat_file = argv[4];
 	clock_t start = clock();
 	GMLGraphReader reader;
 	Graph g = reader.read(argv[1]);
@@ -56,7 +57,7 @@ int main(int argc, char* argv[]) {
 	cerr << "Nodes: " << g.nodes().size() << endl;
 	cerr << "Edges: " << g.edges().size() << endl;
 	double delta = 0.1;
-	double epsilon = 0.1;
+	
 	ApproxBetweenness centrality(g, delta, epsilon, 2);
 	centrality.run();
 	ofstream myfile;
@@ -82,6 +83,10 @@ int main(int argc, char* argv[]) {
 	cerr<<"bound: "<<mean + filterparam*stdev<<endl;
 	cerr<<"filter: "<<filter<<endl;
 	double bound = mean + filterparam*stdev;
+	ofstream runfile;
+	runfile.open(repeat_file+".runtime");
+	runfile << (double) (clock() - start) / CLOCKS_PER_SEC << endl;
+
 	for (int i = 0; i < g.nodes().size(); i++) {
 		int isrepeat = 0;
 		if(nodeRanks.at(i).second >= bound){
@@ -91,8 +96,7 @@ int main(int argc, char* argv[]) {
 //		myfile << nodeRanks.at(i).first <<"\t"<< nodeRanks.at(i).second<<"\t"<<labelmap[String]<< endl;
 	myfile << nodeRanks.at(i).first <<"\t"<< nodeRanks.at(i).second<<"\t"<<labelmap[String]<<"\t"<<isrepeat<< endl;
 	}
-	cerr << "Execution Time = " << (double) (clock() - start) / CLOCKS_PER_SEC
-			<< endl;
+
 	return 0;
 }
 

@@ -1,0 +1,9 @@
+./runpath.sh ../data/2_ref.k55.simple.gml 3 0.01 ../data/2_ref.k55.simple.repeats 2_repeat.map 
+
+./runnode.sh ../data/2_ref.k55.simple.gml 3 1000 ../data/2_ref.k55.simple.repeats 2_repeat.map
+
+
+For both scripts:
+
+order is:
+[gml][cutoff][epsilon/nodes][repeat_file][map_file]
