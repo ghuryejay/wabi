@@ -40,6 +40,7 @@ def main():
 			true_negative += 1
 	
 	
+#		print order nodes/epsilon	runtime	true_pos	true_neg	false_pos	false_neg
         print "true positives = " + str(true_positive)
         print "true negatives = " +str(true_negative)
         print "false positives = " + str(false_positive)

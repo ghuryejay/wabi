@@ -51,21 +51,16 @@
 % their surnames. This ensures that the names appear correctly in
 % the running heads and the author index.
 %
-\author{Alfred Hofmann%
-\thanks{Please note that the LNCS Editorial assumes that all authors have used
-the western naming convention, with given names preceding surnames. This determines
-the structure of the names in the running heads and the author index.}%
-\and Ursula Barth\and Ingrid Haas\and Frank Holzwarth\and\\
-Anna Kramer\and Leonie Kunz\and Christine Rei\ss\and\\
-Nicole Sator\and Erika Siebert-Cole\and Peter Stra\ss er}
+\author{Jay Ghurye%
+\and Chris Hill\and Mihai Pop}
 %
-\authorrunning{Lecture Notes in Computer Science: Authors' Instructions}
+\authorrunning{Identifiyng Inter-Genomic Repeats Using Fast,
+Approximate Betweenness Centrality}
 % (feature abused for this document to repeat the title also on left hand pages)
 
 % the affiliations are given next; don't give your e-mail address
 % unless you accept that it will be published
-\institute{Springer-Verlag, Computer Science Editorial,\\
-Tiergartenstr. 17, 69121 Heidelberg, Germany\\
+\institute{University of Maryland, College Park\\
 \mailsa\\
 \mailsb\\
 \mailsc\\
@@ -111,7 +106,7 @@ where $\delta_{s}(v) = \frac{\sigma_{st}(v)}{\sigma_{st}}$ and $succ(v)$ is an i
 This algorithm takes time $\Theta(mn)$ for unit edge weight graphs and $\Theta(mn + n^{2}log(n))$ for weighted graphs. This algorithm does not scale well with large networks with millions of nodes and edges. Bader and Madduri\cite{bader} provide a massively parallel implementation of the exact algorithm. However this approach scales to about a few million nodes. 
 
 \subsection*{Betweenness Centrality Based on Sampling Nodes}
-Due to scalability limitations of exact betweenness centrality, several approximation algorithms for betweenness centrality have been proposed. Bader and Pich\cite{bp} provide an approximation algorithm by extrapolating from a subset of $k$ starting nodes called pivots and using same aggregation strategy as exact betweeness algorithm. However, this algorithm overestimates the centrality of some unimportant nodes which lie near pivot. The approximation algorithm proposed in \cite{sanders} comes over this drawback by changing the scheme for aggregating betweenness contributions so that nodes do not get profited just because they are near pivot. They define an estimator for betweenness centrality. This estimator is characterized by a length function $l : E \Rightarrow \mathbb{R}$ on the edges and a scaling function $f : [0,1] \Rightarrow [0,1]$. For a path $P = (e_{1},e_{2}...,e_{k})$ let $l(P) := \sum_{1 \leq i \leq k} l(e_{i})$. Let $n$ be the number of sample nodes chosen from a graph. The algorithm works as follows: In each iteration one of $2n$ shortest path searches is performed with uniform probability $1/2n$. An iteration can be a forward search in $G = (V,E)$ from a pivot $s \in V$ ($|V| = n$) or backward search from a pivot $t \in V$, that is a search from $t$ in $(V,{(v,u) : (u,v) \in E})$. For each shortest path of the form 
+Due to scalability limitations of exact betweenness centrality, several approximation algorithms for betweenness centrality have been proposed. Bader and Pich\cite{bp} provide an approximation algorithm by extrapolating from a subset of $k$ starting nodes called pivots and using same aggregation strategy as exact betweeness algorithm. However, this algorithm overestimates the centrality of some unimportant nodes which lie near pivot. The approximation algorithm proposed by Geisberger et al. \cite{sanders} comes over this drawback by changing the scheme for aggregating betweenness contributions so that nodes do not get profited just because they are near pivot. They define an estimator for betweenness centrality. This estimator is characterized by a length function $l : E \Rightarrow \mathbb{R}$ on the edges and a scaling function $f : [0,1] \Rightarrow [0,1]$. For a path $P = (e_{1},e_{2}...,e_{k})$ let $l(P) := \sum_{1 \leq i \leq k} l(e_{i})$. Let $n$ be the number of sample nodes chosen from a graph. The algorithm works as follows: In each iteration one of $2n$ shortest path searches is performed with uniform probability $1/2n$. An iteration can be a forward search in $G = (V,E)$ from a pivot $s \in V$ ($|V| = n$) or backward search from a pivot $t \in V$, that is a search from $t$ in $(V,{(v,u) : (u,v) \in E})$. For each shortest path of the form 
 $$ P = (\overbrace{s,...,v}^{Q},..,t)$$ 
 a scaled contribution is defined as follows:\\
 
@@ -138,47 +133,17 @@ $$\delta_{s}(v) = \sum_{w \in succ(v)} \frac{\mu(s,v)}{\mu(s,w)}.\frac{\sigma_{s
 where $\mu(s,w)$ is the shortest path distance from $s$ to $w$. It uses $\frac{\mu(s,v)}{\mu(s,w)}$ in aggregation instead of $1$ in Brandes algorithm. 
 
 \subsection*{Betweenness Centrality Based on Sampling Shortest Paths}
-There  is another approximation algorithm was proposed by Matteo et al. \cite{matteo} based on randomized sampling of shortest paths and offer probabilistic guarantees on the quality of approximation. This algorithm guarantees that all approximate values of betweenness for all vertices are within an additive factor $\epsilon \in (0,1)$ from the real values with probability at least $1-\delta$. To derive bounds on sample size, results from VC dimension\cite{vc} theory are used. The main advantage of this algorithm is that the sample size does not depend on the size of the graph, but only on the maximum number vertices in a shortest path which is called \textit{vertex diameter}.  
+There  is another approximation algorithm was proposed by Matteo et al. \cite{matteo} based on randomized sampling of shortest paths and offer probabilistic guarantees on the quality of approximation. This algorithm guarantees that all approximate values of betweenness for all vertices are within an additive factor $\epsilon \in (0,1)$ from the real values with probability at least $1-\delta$. To derive bounds on sample size, results from VC dimension theory\cite{vc} are used. The main advantage of this algorithm is that the sample size does not depend on the size of the graph, but only on the maximum number vertices in a shortest path which is called \textit{vertex diameter}.  
 
-The Vapnik-Chernovenkis(VC) dimensions of a class of subset is defined on a set of points is a measure of expressiveness of such class. Given a probability distribution on the set of points, a finite bound on the VC-dimension of the class of subsets implies a bound on the number of random samples required to approximate the probability of each subset in the class with its empirical average. To define this formally, let $D$ be a domain and $R$ be a collection of subsets from $D$. We call $R$ a \textit{range set} on $D$. Given $B \subseteq D$, the projection of $R$ on $B$ is the set of $P_{R}(B) = \{B \cap A : A \in R\}$.We say that the set $B$ is \textit{shattered} by $R$ if $P_{R}(B) = 2^{B}$, where $2^{B}$ is the powerset of $B$.
-
-\begin{mydef}
-The \textit{Vapnik-Chervonenkis} (VC) dimension of $R$, denoted as $VC(R)$, is the cardinality of the largest subset of $D$ that is shattered by $R$.
-\end{mydef}
-
-It has been shown that if an upper bound to the VC-dimension of $R$ is available, it is possible to build an $\epsilon$-approximation by sampling the points of the domain according to distribution $\phi$.
-
-\begin{mydef}
-Let $R$ be a range set on a domain $D$ with VC(R) $\leq d$, and let $\phi$ be a distribution on $D$. Given $\epsilon, \delta \in (0,1)$ let $S$ be a collection of $|S|$ points from $D$ sampled according to $\phi$ with
-\begin{equation} \label{sample_size}
-|S| = \frac{c}{\epsilon^{2}}(d + ln\frac{1}{\delta})
-\end{equation}
-
-where $c$ is a universal positive constant approximated to 0.5. Then $S$ is an $\epsilon$-approximation to $(R,\phi)$ with probability at least $(1-\delta)$.
-\end{mydef}
-
-Using these insights from VC-dimensions, we can define a range set on the shortest paths of a graph $G = (V,E)$ and present a tight upper bound to its VC-dimensions. The range set $R_{G}$ is defined on the set $\mathtt{S}_{G}$ of all shortest paths between vertices of $G$. It contains, for each vertex $v \in V$, the set $T_{v}$ of shortest paths that $v$ is internal to: 
-$$R_{G} = \{T_{v} : v \in V\}.$$
-Let us define for each shortest path $p$, $Int(p)$ be the set of internal vertices on that path.  Let $H(G)$ be the maximum integer $d$ such that there are $h = \left\lfloor{log_{2}(d-2)}\right\rfloor + 1$ shortest paths $\{p_{1},p_{2},....p_{h}\}$
-in $\mathtt{S}_{G}$ of size at least $d$ and such that the collection $\{Int(p_{1}),....,Int(p_{h})\}$ is an anti-chain, that is a collection of sets such that for no two sets in it, one is a subset of other. It has been shown that this can be used to provide an upper bound on VC-dimension on set $R_{G}$. So we have:
-$$VC(R_{G}) \leq \left\lfloor{log_{2}(H(G) - 2)}\right\rfloor + 1$$
-It $VD(G)$ be the vertex diameter of graph G. It can be shown that $H(G) \leq VD(G)$. As calculating exact $H(G)$ value is hard, we can make use of $VD(G)$ to define upper bound on VC-dimension of $R_{G}$ as follows:
-$$VC(R_{G}) \leq \left\lfloor{log_{2}(VD(G) - 2)}\right\rfloor + 1$$
-
-The algorithm to calculate approximate betweenness centrality works as follows. For a graph $G(V,E)$, with vertex diameter $VD(G)$, sample size $r$ is estimated as follows:
-$$ d = \left\lfloor{log_{2}(VD(G) - 2)}\right\rfloor + 1$$
-Substituting this $d$ in equation\ref{sample_size}, we get
+The Vapnik-Chernovenkis(VC) dimensions of a class of subset is defined on a set of points is a measure of expressiveness of such class. Given a probability distribution on the set of points, a finite bound on the VC-dimension of the class of subsets implies a bound on the number of random samples required to approximate the probability of each subset in the class with its empirical average. This technique is used to derive the expressiveness of the sample of shortest paths derived. For graph $G(V,E)$, let $S_{all}$ be the union of $T_{v}$ for all $v \in V$, where $T_{v}$ is the set of all shortest path to which $v$ is internal. VC dimension technique helps in choosing sample from $S_{all}$ so that it gives probabilistic guarantees. It is show that the upper bound on VC dimensions of $S_{all}$ is given by:
+$$VC(S_{all}) \leq \left\lfloor{log_{2}(VD(G) - 2)}\right\rfloor + 1$$
+where $VD(G)$ is vertex diameter of $G$. Using this upper bound, sample size $r$ can be estimated as follows:
 \begin{equation} \label{sample_size_algo}
 r = \frac{c}{\epsilon^{2}}(\left\lfloor{log_{2}(VD(G) - 2)}\right\rfloor + 1 + ln\frac{1}{\delta})
-\end{equation}
-This sample size achieves desired accuracy with the desired confidence. The algorithm repeats following steps $r$ times: 1. It samples a pair of $u,v$ of distinct vertices uniformly at random. 2. It computes set $S_{uv}$ or all shortest paths between $u$ and $v$. 3. It selects path $p$ from $S_{uv}$ at random. 4. It increases by $1/r$ the betweenness estimation of each vertex in $Int(p)$. If sampled vertices $u$ and $v$ are not connected, steps 3 and 4 can be skipped. 
+\end{equation} 
+where $c$ is a universal constant with value $0.5$. It is guaranteed that betweenness centralities estimated using this sample size are within additive factor $\epsilon$ from real values with probability atleast $1-\delta$. 
 
-There are two crucial things in this algorithm. First is computing approximate vertex diameter. Calculating exact VD(G) will need to solve all pair shortest  path problem. The complexity of this algorithm is $O(V^{2}logV + VE)$ by Johnson's algorithm\cite{johnson} and $\Theta(V^{3})$ by Floyd-Warshall algorithm. This would be very slow. A faster linear time 2-approximation algorithm is proposed in \cite{matteo}. It is as follows:
-\begin{itemize}
-\item Select $v \in V$ at random
-\item Compute shortest path from $v$ to all vertices in $V$
-\item Finally take $VD(G)$ be the sum of lengths of two shortest paths with maximum size from $v$ to two distinct nodes $u$ and $w$. 
-\end{itemize}
+Complete algorithm is sketched in algorithm 1. There are two crucial things in this algorithm. First is computing approximate vertex diameter. Calculating exact VD(G) will need to solve all pair shortest  path problem. The complexity of this algorithm is $O(V^{2}logV + VE)$ by Johnson's algorithm\cite{johnson} and $\Theta(V^{3})$ by Floyd-Warshall algorithm. This would be very slow. A faster linear time 2-approximation algorithm is proposed in \cite{matteo} is used to calculate approximate vertex diameter. 
 
 Second is to sample shortest paths. They way a random shortest path from $S_{uv}$ is inspired by Brandes algorithm\cite{brandes}. Assume that $u$ and $v$ are connected. For each vertex $w$, let $P_{u}(w)$ be a subset of neighbors of $w$ which are predecessors of $w$ along the shortest path from $u$ to $w$. Let $p^{*}$ be the sampled shortest path that we build backwards starting from the endpoint $v$ and by adding sampled predecessors before $v$. Initially $p^{*} = {v}$. Starting from $v$, we select it's predecessor $z \in P_{u}(v)$ using weighted random sampling. Each $z \in P_{u}(v)$ has probability $\sigma_{uz}/\sum_{w \in P_{u}(v)}\sigma_{uv} = \sigma_{uz}/\sigma_{uv}$. We add $z$ to $p^{*}$ and repeat this procedure until $z \neq u$. In the end, we have single shortest path sampled from $S_{uv}$. 
  
@@ -266,7 +231,7 @@ We evaluated algorithms for betweenness centrality to find inter-genome repeats 
 A good repeat detection should have both good sensitivity and specificity. Sensitivity reflects how many true repeats are detected. Detecting to few repeats can lead to assembly errors in scaffolding. Specificity reflects the false positives. Detecting too many repeats leads to a suboptimal assembly as these contigs do not fully participate in scaffolding. 
 
 \section{Conclusion}
-
+In this work, we show how approximate betweenness centrality can be used to identify inter-genome repeats. We explored two algorithms, one based on sampling shortest paths in a graph and other based on sampling nodes in a graph. Application of both these algorithms to repeat detection problem provided significantly accurate and fast results. We explore how various parameters such as number of sampled nodes and filtering criteria to mark a node as repeat affects the accuracy of repeat detection. We are planning to use these techniques for repeat detection in our future metagenomic assembler. 
 \bibliography{manuscript}{}
 \bibliographystyle{abbrv}
 
