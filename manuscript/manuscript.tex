@@ -29,9 +29,7 @@
 
 
 \usepackage{url}
-\urldef{\mailsa}\path|{alfred.hofmann, ursula.barth, ingrid.haas, frank.holzwarth,|
-\urldef{\mailsb}\path|anna.kramer, leonie.kunz, christine.reiss, nicole.sator,|
-\urldef{\mailsc}\path|erika.siebert-cole, peter.strasser, lncs}@springer.com|    
+\urldef{\mailsa}\path|{jayg, cmhill, mpop}@cs.umd.edu|    
 \newcommand{\keywords}[1]{\par\addvspace\baselineskip
 \noindent\keywordname\enspace\ignorespaces#1}
 
@@ -40,10 +38,10 @@
 \mainmatter  % start of an individual contribution
 
 % first the title is needed
-\title{Identifiyng Inter-Genomic Repeats Using Fast, Approximate Betweenness Centrality}
+\title{Identifying Inter-Genomic Repeats Using Fast, Approximate Methods for Betweenness Centrality}
 
 % a short form should be given in case it is too long for the running head
-\titlerunning{Lecture Notes in Computer Science: Authors' Instructions}
+\titlerunning{Identifying Inter-Genomic Repeats Using Fast, Approximate Betweenness Centrality}
 
 % the name(s) of the author(s) follow(s) next
 %
@@ -52,19 +50,16 @@
 % the running heads and the author index.
 %
 \author{Jay Ghurye%
-\and Chris Hill\and Mihai Pop}
+\and Christopher M. Hill\and Mihai Pop}
 %
 \authorrunning{Identifiyng Inter-Genomic Repeats Using Fast,
-Approximate Betweenness Centrality}
+Approximate Methods for Betweenness Centrality}
 % (feature abused for this document to repeat the title also on left hand pages)
 
 % the affiliations are given next; don't give your e-mail address
 % unless you accept that it will be published
 \institute{University of Maryland, College Park\\
-\mailsa\\
-\mailsb\\
-\mailsc\\
-\url{http://www.springer.com/lncs}}
+\mailsa\\}
 
 %
 % NB: a more complex sample for affiliations and the mapping to the
@@ -225,6 +220,14 @@ We evaluated algorithms for betweenness centrality to find inter-genome repeats 
 \end{itemize}
 
 A good repeat detection should have both good sensitivity and specificity. Sensitivity reflects how many true repeats are detected. Detecting to few repeats can lead to assembly errors in scaffolding. Specificity reflects the false positives. Detecting too many repeats leads to a suboptimal assembly as these contigs do not fully participate in scaffolding. 
+
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width = \textwidth]{sampled_nodes}
+\caption{Example of conversion of de Bruijn graph to Repeats graph}
+\label{fig:sampled_nodes}
+\end{figure}
 
 \section{Conclusion}
 In this work, we show how approximate betweenness centrality can be used to identify inter-genome repeats. We explored two algorithms, one based on sampling shortest paths in a graph and other based on sampling nodes in a graph. Application of both these algorithms to repeat detection problem provided significantly accurate and fast results. We explore how various parameters such as number of sampled nodes and filtering criteria to mark a node as repeat affects the accuracy of repeat detection. We are planning to use these techniques for repeat detection in our future metagenomic assembler. 
