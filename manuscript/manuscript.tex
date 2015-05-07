@@ -120,6 +120,15 @@ due to a backward search.
 This algorithm is efficiently implemented using two techniques. First one is \textit{linear scaling}, where the contribution of a node $v$ depends linearly on the distance to the sample. Nearer the node is to the sample, lesser is its contribution counted. Linear scaling is implemented using a simple variant of aggregation scheme proposed in Brandes algorithm. Second technique is \textit{bisection scaling} where the sample only contributes to the second half of a path. This means that for a vertex $v$, its contribution is considered only if it is at atleast half distance between $s$ and $t$ away from $s$ in forward search or more than half a distance away from $t$ in backward search. 
 
 
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width = \textwidth]{es_mix_200kb_k21.png}
+\caption{Example of conversion of de Bruijn graph to Repeats graph}
+\label{fig:sampled_nodes}
+\end{figure}
+
+
 \subsection*{Betweenness Centrality Based on Sampling Shortest Paths}
 There  is another approximation algorithm was proposed by Matteo et al. \cite{matteo} based on randomized sampling of shortest paths and offer probabilistic guarantees on the quality of approximation. This algorithm guarantees that all approximate values of betweenness for all vertices are within an additive factor $\epsilon \in (0,1)$ from the real values with probability at least $1-\delta$. To derive bounds on sample size, results from VC dimension theory\cite{vc} are used. The main advantage of this algorithm is that the sample size does not depend on the size of the graph, but only on the maximum number vertices in a shortest path which is called \textit{vertex diameter}.  
 
