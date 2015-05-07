@@ -203,7 +203,7 @@ Here are few questions we want to investigate based on these algorithms:
 \begin{itemize}
 \item \textbf{Scalability}: How these algorithms scale on large metagenomic repeats graph? Does parallelized algorithm provides quick results or taking sample of fewer nodes provides quick results?
 \item \textbf{Accuracy}: Which of these algorithms provides better accuracy while determining inter-genomic repeats?
-\item \textbf{Sample Size}: For the algorithm by Geisberger et al. \cite{sanders}, how should a sample size be defined so that it would produce fast and accurate results? We try to come up with a heuristic to define sample size
+\item \textbf{Sample Size}: For the algorithm by Geisberger et al. \cite{sanders}, how should a sample size be defined so that accuray of repeat detection is maximized. We also stuy the effect of sample size in ghe algorithm by Matteo et al.\cite{matteo}
 \end{itemize}
 
 
@@ -211,15 +211,17 @@ Here are few questions we want to investigate based on these algorithms:
 To determine which nodes in a graph should be marked as repeats, we define a criteria based on the value of centrality calculated by the algorithm. Let $x$ be the mean of centralities of all the nodes and $\sigma$ be the standard deviation. A node $v$ is marked as repeat only if the following condition holds: $b(v) \geq x + c*\sigma$ where $c$ is a constant and $b(v)$ is betweenness centrality of the node. We set value of $c$ as 3 as it works out the best.
 
 \section{Results} 
-We evaluated algorithms for betweenness centrality to find inter-genome repeats on real datasets described above. We use the notion of sensitivity and specificity to define the accuracy of repeat detection. We define following terms:
+We evaluated algorithms for betweenness centrality to find inter-genome repeats on real datasets described above. We use the notion of sensitivity and specificity to define the accuracy of repeat detection. A good repeat detection strategy should have both high sensitivity and specificity. Sensitivity is the measure of proportion of actual repeats which are correctly identified by the algorithm. Specificity is the proportion of non-repeats correctly identified by the algorithm. High sensitivity is desired because we want to remove as many repeats from the graph. High specificity is desired becasue we do not want to remove non-repeats which are incorrectly identified as repeats by algorithm. To calculate sensitivity and specificity, we define following terms:
 \begin{itemize}
-\item \textbf{True positives:} Number of nodes marked as repeat that is found within at least 2 genomes
-\item \textbf{False positives:} Number of nodes marked as repeat that is only repetitive within a single genome
-\item \textbf{True negatives:} Number of nodes marked as non-repeat that is only repetitive within a single genome
-\item \textbf{False negatives:} Number of nodes marked as non-repeat that is found within at least 2 genomes
+\item \textbf{True positives(TP):} Number of nodes marked as repeat that is found within at least 2 genomes
+\item \textbf{False positives(FP):} Number of nodes marked as repeat that is only repetitive within a single genome
+\item \textbf{True negatives(TN):} Number of nodes marked as non-repeat that is only repetitive within a single genome
+\item \textbf{False negatives(FN):} Number of nodes marked as non-repeat that is found within at least 2 genomes
 \end{itemize}
 
-A good repeat detection should have both good sensitivity and specificity. Sensitivity reflects how many true repeats are detected. Detecting to few repeats can lead to assembly errors in scaffolding. Specificity reflects the false positives. Detecting too many repeats leads to a suboptimal assembly as these contigs do not fully participate in scaffolding. 
+Using these quantities, we can define sensitivity and specificity as follows:
+ $$Sensitivity = \frac{TP}{TP+FN}$$
+ $$Specificity = \frac{TN}{TN+FP}$$
 
 
 \begin{figure}[htbp]
