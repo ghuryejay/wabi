@@ -190,13 +190,7 @@ We modify the de Bruijn graph generated from genomes to identify repeats in a be
 \end{figure}
 
 \subsection*{Networkit}
-We investigated the performance of approximate betweenness centrality algorithms on the metagenomic graphs to find inter-genome repeats. We used the implementation in Networkit\cite{networkit} library. It provides implementation for various graph algorithms. We are particularly interested in the implementation of betweenness centrality algorithms. We make use of two approximate betweenness centrality algorithms provided by NetworKit. 
-
-NetworKit provides fast parallel implementation of approximate betweenness centrality algorithm by Matteo et al. \cite{matteo}. The implementation first approximates diameter of of graph. After this, it calculates the number of shortest paths to be sampled. It processes shortest paths in the sample in parallel in multithreaded fashion and then aggregates the centrality scores for each shortest paths once every thread finishes processing of shortest path assigned to it. 
-
-We also investigate the performance of algorithm by Geisberger et al. \cite{sanders}. NetworKit provides single threaded implementation of this algorithm. It first creates a sample of $n$ nodes at random from a given graph. It then runs single source shortest path algorithm for each of those nodes. It calculates the betweenness scores for each node by the modified aggregation scheme proposed in the algorithm. 
-
-Here are few questions we want to investigate based on these algorithms:
+We investigated the performance of approximate betweenness centrality algorithms on the metagenomic graphs to find inter-genome repeats. We used the implementations provided by  Networkit\cite{networkit} library. NetworKit an open source library for high-performance network analysis. It implements effecient graph algorithms and parallelize most of them. It provides implementation for variety of centrality measures. We used the implementation of approximate network centrality. NetworKit provides a parallel implementation of the algorithm by Matteo et al.\cite{matteo} which is based on sampling shortest paths. It also provides implementation for the algorithm by Geisberger et al.\cite{sanders}. However, this algorithm is not parallelized. 
 
 \begin{itemize}
 \item \textbf{Scalability}: How these algorithms scale on large metagenomic repeats graph? Does parallelized algorithm provides quick results or taking sample of fewer nodes provides quick results?
