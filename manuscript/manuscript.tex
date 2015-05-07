@@ -121,12 +121,12 @@ This algorithm is efficiently implemented using two techniques. First one is \te
 
 
 
-\begin{figure}[htbp]
+\begin{figure*}[htbp]
 \centering
-\includegraphics[width = \textwidth]{es_mix_200kb_k21.png}
-\caption{Example of conversion of de Bruijn graph to Repeats graph}
+\includegraphics[width=\textwidth]{es_mix_200kb_k21.png}
+\caption{Assembly graph of a simulated community consisting of 200 Kbp subsets of \textit{Escherichia coli} str. K-12 MG1655 and emph{Staphylococcus aureus}.  Nodes are colored and sized based on their relative betweenness centrality. The highlighted nodes are inter-genomic repeats whose deletion would separate the graph.}
 \label{fig:sampled_nodes}
-\end{figure}
+\end{figure*}
 
 
 \subsection*{Betweenness Centrality Based on Sampling Shortest Paths}
@@ -233,6 +233,20 @@ Using these quantities, we can define sensitivity and specificity as follows:
 \caption{Example of conversion of de Bruijn graph to Repeats graph}
 \label{fig:sampled_nodes}
 \end{figure}
+
+
+\begin{table}[h]
+\centering
+\caption[]{Statistical measures of performance using different cutoff levels for marking a node as an inter-genomic repeat on the simulated 10 genome assembly graph.  $c=3$ is Bambus2's default cutoff level and \textsc{irq} utilizes the different quartile values. }
+\begin{tabular}{lllll}
+ & $c=3$        & \textsc{irq}   \\
+\hline
+sensitivity & 0.0584 & 0.344 \\
+specificity & 0.993  & 0.909 \\
+precision   & 0.250  & 0.125 \\
+\hline 
+\end{tabular}
+\end{table}
 
 \section{Conclusion}
 In this work, we show how approximate betweenness centrality can be used to identify inter-genome repeats. We explored two algorithms, one based on sampling shortest paths in a graph and other based on sampling nodes in a graph. Application of both these algorithms to repeat detection problem provided significantly accurate and fast results. We explore how various parameters such as number of sampled nodes and filtering criteria to mark a node as repeat affects the accuracy of repeat detection. We are planning to use these techniques for repeat detection in our future metagenomic assembler. 
