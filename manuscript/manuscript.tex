@@ -85,31 +85,20 @@ Metagenomic data are considerably more complex. The assembly of metagenomic data
 \section{Related Work}
 
 \subsection*{Betweenness Centrality}
-In graph theory and network analysis, indicators of centrality identify the most important vertices within a graph.Several metrics to measure centrality have been proposed. We make use of betweenness centrality. For a particular node, betweenness centrality is equal to the number of shortest paths from all vertices to all others that pass through that node. Formally, for a node $v$, it is defined by following expression:
+In graph theory and network analysis, indicators of centrality identify the most important vertices within a graph. :Several metrics to measure centrality have been proposed. We make use of betweenness centrality. For a particular node, betweenness centrality is equal to the number of shortest paths from all vertices to all others that pass through that node. Formally, for a node $v$, it is defined by following expression:
 
 $$g(v) = \sum_{s \neq t \neq v} \frac{\sigma_{st}(v)}{\sigma_{st}}$$
 
 where $\sigma_{st}$ is the total number of shortest paths from node $s$ to node $t$ and $\sigma_{st}(v)$ is the number of those paths passing through $v$.
 
-Brandes\cite{brandes} gives an exact algorithm for computing betweenness centrality of all the nodes that is based on solving a single source shortest path (SSSP) problem for each node. An SSSP computation from $s$ produces a directed acyclic graph (DAG) encoding all shortest paths starting at $s$. By backward aggregation of counter values, the contributions of these paths to the betweenness counters can be computed in linear time. Brandes algorithm explains how to calculate $\sigma_{st}$ on the fly during shortest path calculations: $\sigma_{ss} = 1$ and for $s \neq t, \sigma_{st} = \sum_{v \in pred(t)} \sigma_{sv}$ where $pred(t)$ is a multiset containing the immediate predecessors of  $t$ in the shortest path DAG. In a subsequent aggregation phase, the nodes are processed in reverse topological order, i.e. by non-decreasing distance from $s$. So we have: 
+Brandes\cite{brandes} gives an exact algorithm for computing betweenness centrality of all the nodes that is based on solving a single source shortest path (SSSP) problem for each node. An SSSP computation from $s$ produces a directed acyclic graph (DAG) encoding all shortest paths starting at $s$.   The contributions of these paths to the betweenness counters can be computed in linear time using backward aggregation. Brandes algorithm explains how to calculate $\sigma_{st}$ on simultaneously with shortest path calculations: $\sigma_{ss} = 1$ and for $s \neq t, \sigma_{st} = \sum_{v \in pred(t)} \sigma_{sv}$ where $pred(t)$ is a collection of the immediate predecessors of  $t$ on every shortes path ending at $t$. In a subsequent aggregation phase, nodes are procesed by non-decreasing distance from $s$. So we have: 
 $$\delta_{s}(v) = \sum_{w \in succ(v)} \frac{\sigma_{sv}}{\sigma_{sw}}(1+\delta_{s}(w))$$
 
 where $\delta_{s}(v) = \frac{\sigma_{st}(v)}{\sigma_{st}}$ and $succ(v)$ is an immediate successor of $v$  in the shortest path DAG.   
-This algorithm takes time $\Theta(mn)$ for unit edge weight graphs and $\Theta(mn + n^{2}log(n))$ for weighted graphs. This algorithm does not scale well with large networks with millions of nodes and edges. Bader and Madduri\cite{bader} provide a massively parallel implementation of the exact algorithm. However this approach scales to about a few million nodes. 
+This algorithm takes time $\Theta(mn)$ for unit edge weight graphs and $\Theta(mn + n^{2}log(n))$ for weighted graphs. This algorithm does not scale well with large networks with millions of nodes and edges. Bader and Madduri\cite{bader} provide a massively parallel implementation of the exact algorithm. However this approach scales to about a few million nodes and can not be fast enough for larger assembly graphs. 
 
 \subsection*{Betweenness Centrality Based on Sampling Nodes}
-Due to scalability limitations of exact betweenness centrality, several approximation algorithms for betweenness centrality have been proposed. Bader and Pich\cite{bp} provide an approximation algorithm by extrapolating from a subset of $k$ starting nodes called pivots and using same aggregation strategy as exact betweeness algorithm. However, this algorithm overestimates the centrality of some unimportant nodes which lie near pivot. The approximation algorithm proposed by Geisberger et al. \cite{sanders} comes over this drawback by changing the scheme for aggregating betweenness contributions so that nodes do not get profited just because they are near pivot. They define an estimator for betweenness centrality. This estimator is characterized by a length function $l : E \Rightarrow \mathbb{R}$ on the edges and a scaling function $f : [0,1] \Rightarrow [0,1]$. For a path $P = (e_{1},e_{2}...,e_{k})$ let $l(P) := \sum_{1 \leq i \leq k} l(e_{i})$. Let $n$ be the number of sample nodes chosen from a graph. The algorithm works as follows: In each iteration one of $2n$ shortest path searches is performed with uniform probability $1/2n$. An iteration can be a forward search in $G = (V,E)$ from a pivot $s \in V$ ($|V| = n$) or backward search from a pivot $t \in V$, that is a search from $t$ in $(V,{(v,u) : (u,v) \in E})$. For each shortest path of the form 
-$$ P = (\overbrace{s,...,v}^{Q},..,t)$$ 
-a scaled contribution is defined as follows:\\
-
-\begin{equation*}
-	\delta_{P}(v) := \begin{cases}
-					\frac{f(l(Q)/l(P))}{\sigma_{st}} & \text{for a forward search} \\\\
-					\frac{1 - f(l(Q)/l(P))}{\sigma_{st}} & \text{for a backward search} 
-					\end{cases}
-\end{equation*}
-
-Overall, $v$ receives contribution 
+Due to scalability limitations of exact betweenness centrality, several approximation algorithms for betweenness centrality have been proposed. Bader and Pich\cite{bp} provide an approximation algorithm by choosing a subset of $k$ starting nodes called pivots and using same aggregation strategy as exact betweeness centrality algorithm. However, this algorithm overestimates the centrality of some unimportant nodes which are nearer to pivots. The approximation algorithm proposed by Geisberger et al. \cite{sanders} comes over this drawback by changing the scheme for aggregating betweenness contributions so that nodes nearer to pivots are not unduly profited. The algorithm starts with the sample of $k$ nodes from $|V| = n$ nodes in graph. In each iteration, it chooses one of $2n$ shortest path at random. Here there are $2n$ sample shortest paths because algorithm can do forward search from $s \in V$ or backward search from $t \in V$ and each $s$ and $t$ can have $n$ values. Let $\delta_{P}(v)$ be the contribution received by node $v$ due to shortest path $P$. It can be shown that \cite{sanders} due to all shortes paths $P$ on which $v$ lies, $v$ receives contribution 
 
 $$\delta(v) := \delta_{s}(v) := \sum_{t \in V}\sum \{\delta_{P}(v):  P \in SP_{st}(v)\}$$
 due to a forward search, and 
@@ -117,7 +106,7 @@ due to a forward search, and
 $$\delta(v) := \delta_{t}(v) := \sum_{s \in V}\sum \{\delta_{P}(v):  P \in SP_{st}(v)\}$$
 due to a backward search. 
 
-This algorithm is efficiently implemented using two techniques. First one is \textit{linear scaling}, where the contribution of a node $v$ depends linearly on the distance to the sample. Nearer the node is to the sample, lesser is its contribution counted. Linear scaling is implemented using a simple variant of aggregation scheme proposed in Brandes algorithm. Second technique is \textit{bisection scaling} where the sample only contributes to the second half of a path. This means that for a vertex $v$, its contribution is considered only if it is at atleast half distance between $s$ and $t$ away from $s$ in forward search or more than half a distance away from $t$ in backward search. 
+This algorithm is efficiently implemented using two techniques. First one is \textit{linear scaling}, where the contribution of a node $v$ depends linearly on the distance to the sample. Nearer the node is to the sample, lesser is the contribution of that sample for the that node is counted. Linear scaling is implemented using a simple variant of aggregation scheme proposed in Brandes algorithm. Second technique is \textit{bisection scaling} where the sample only contributes to the second half of a path. This means that for a vertex $v$, the contribution of sample is considered only if it is at atleast half distance between $s$ and $t$ away from $s$ in forward search or more than half a distance away from $t$ in backward search where $s$ and $t$ are nodes in sample. 
 
 
 
@@ -130,54 +119,17 @@ This algorithm is efficiently implemented using two techniques. First one is \te
 
 
 \subsection*{Betweenness Centrality Based on Sampling Shortest Paths}
-There  is another approximation algorithm was proposed by Matteo et al. \cite{matteo} based on randomized sampling of shortest paths and offer probabilistic guarantees on the quality of approximation. This algorithm guarantees that all approximate values of betweenness for all vertices are within an additive factor $\epsilon \in (0,1)$ from the real values with probability at least $1-\delta$. To derive bounds on sample size, results from VC dimension theory\cite{vc} are used. The main advantage of this algorithm is that the sample size does not depend on the size of the graph, but only on the maximum number vertices in a shortest path which is called \textit{vertex diameter}.  
-
-The Vapnik-Chernovenkis(VC) dimensions of a class of subset is defined on a set of points is a measure of expressiveness of such class. Given a probability distribution on the set of points, a finite bound on the VC-dimension of the class of subsets implies a bound on the number of random samples required to approximate the probability of each subset in the class with its empirical average. This technique is used to derive the expressiveness of the sample of shortest paths derived. For graph $G(V,E)$, let $S_{all}$ be the union of $T_{v}$ for all $v \in V$, where $T_{v}$ is the set of all shortest path to which $v$ is internal. VC dimension technique helps in choosing sample from $S_{all}$ so that it gives probabilistic guarantees. It is shown that the upper bound on VC dimensions of $S_{all}$ is given by:
+Another approximation algorithm was proposed by Matteo et al. \cite{matteo} based on randomized sampling of shortest paths and offer probabilistic guarantees on the quality of approximation. This algorithm guarantees that all approximate values of betweenness for all vertices are within an additive factor $\epsilon \in (0,1)$ from the real values with probability at least $1-\delta$. To derive bounds on sample size, results from VC dimension theory\cite{vc} are used. The main advantage of this algorithm is that the sample size does not depend on the size of the graph, but only on the maximum number vertices in a shortest path which is called \textit{vertex diameter}. The Vapnik-Chernovenkis(VC) dimensions of a class of subset is defined on a set of points is a representation of expressiveness of such class. Given a probability distribution on the set of points, a finite bound on the VC-dimension of the class of subsets implies a bound on the number of random samples required to approximate the probability of each subset in the class with its empirical average. This technique is used to derive the expressiveness of the sample of shortest paths. For graph $G(V,E)$, let $S_{all}$ be the union of $T_{v}$ for all $v \in V$, where $T_{v}$ is the set of all shortest path to which $v$ is internal. VC dimension technique helps in choosing appropriate sample from $S_{all}$. It is shown that the upper bound on VC dimensions of $S_{all}$ is given by:
 $$VC(S_{all}) \leq \left\lfloor{log_{2}(VD(G) - 2)}\right\rfloor + 1$$
-where $VD(G)$ is vertex diameter of $G$. Using this upper bound, sample size $r$ can be estimated as follows:
+where $VD(G)$ is vertex diameter of $G$. Using this upper bound, sample size $r$ can be derived as follows:
 \begin{equation} \label{sample_size_algo}
 r = \frac{c}{\epsilon^{2}}(\left\lfloor{log_{2}(VD(G) - 2)}\right\rfloor + 1 + ln\frac{1}{\delta})
 \end{equation} 
-where $c$ is a universal constant with value $0.5$. It is guaranteed that betweenness centralities estimated using this sample size are within additive factor $\epsilon$ from real values with probability atleast $1-\delta$. 
+where $c$ is a constant with value $0.5$. It is guaranteed that betweenness centralities estimated using this sample size are within additive factor $\epsilon$ from real values with probability atleast $1-\delta$. 
 
-Complete algorithm is sketched in algorithm 1. There are two crucial things in this algorithm. First is computing approximate vertex diameter. Calculating exact VD(G) will need to solve all pair shortest  path problem. The complexity of this algorithm is $O(V^{2}logV + VE)$ by Johnson's algorithm\cite{johnson} and $\Theta(V^{3})$ by Floyd-Warshall algorithm. This would be very slow. A faster linear time 2-approximation algorithm is proposed in \cite{matteo} is used to calculate approximate vertex diameter. 
+There are two crucial things needed to be handled. First is computing vertex diameter. Calculating exact VD(G) will need to solve all pair shortest  path problem. The complexity of this algorithm is $O(V^{2}logV + VE)$ by Johnson's algorithm\cite{johnson} and $\Theta(V^{3})$ by Floyd-Warshall algorithm. There exits a faster linear time 2-approximation algorithm to calculate approximate vertex diameter for unweighted graph. For weighted graph, there is no relationship between VD(G) and $diam$(G) as shortest path with maximum size may not have maximum weight. For weighted graphs, VD(G) is approximated by calculating the size of largest Weekly Connected Componet(WCC). This can be done in $O(m+n)$ using Breadth First Search.  
 
-Second is to sample shortest paths. They way a random shortest path from $S_{uv}$ is inspired by Brandes algorithm\cite{brandes}. Assume that $u$ and $v$ are connected. For each vertex $w$, let $P_{u}(w)$ be a subset of neighbors of $w$ which are predecessors of $w$ along the shortest path from $u$ to $w$. Let $p^{*}$ be the sampled shortest path that we build backwards starting from the endpoint $v$ and by adding sampled predecessors before $v$. Initially $p^{*} = {v}$. Starting from $v$, we select it's predecessor $z \in P_{u}(v)$ using weighted random sampling. Each $z \in P_{u}(v)$ has probability $\sigma_{uz}/\sum_{w \in P_{u}(v)}\sigma_{uv} = \sigma_{uz}/\sigma_{uv}$. We add $z$ to $p^{*}$ and repeat this procedure until $z \neq u$. In the end, we have single shortest path sampled from $S_{uv}$. 
- 
-\begin{algorithm}
-\caption{Algorithm to compute approximate betweenness centrality}
-\begin {algorithmic}[1]
-\State {\textbf{Input}:Graph $G(V,E)$ with $|V| = n,\epsilon,\delta \in (0,1)$}
-\State {\textbf{Output}: A set of approximate betweenness centrality for all nodes $v$ in $G$}
-\For {$v \in V$}
-\State {$b'(v) = 0$}
-\EndFor 
-\State {$VD(G) \leftarrow \mathtt{getVertexDiameter}(G)$}
-\State {$r \leftarrow \frac{c}{\epsilon^{2}}(\left\lfloor{log_{2}(VD(G) - 2)}\right\rfloor + 1 + ln\frac{1}{\delta})$}
-\For{$i \leftarrow 1$ to $r$}
-\State {$(u,v) = \mathtt{SampleUniformVertexPair(V)}$}
-\State {$S_{uv} = \mathtt{ComputeAllShortestPath(u,v)}$}
-\If {$S_{uv} \neq \{p_{\phi}\}$}
-\State 	{$t \leftarrow v$}
-\While {$t \neq u$}
-\State {sample $z \in P_{u}(t)$ with probability $\sigma_{uz}/\sigma_{ut}$}
-\If {$z \neq u$}
-\State {$b'(z) \leftarrow b'(z) + 1/r$}
-\EndIf
-\State {$t \leftarrow z$}
-\EndWhile
-\EndIf
-\EndFor\\
-\Return {$(v,b'(v)) :\forall v \in V$}
-\end{algorithmic}
-\end{algorithm}
-
-Analysis of this algorithm shows that it offers probabilistic guarantees on the quality of all approximations of the betweenness centrality. Let $b(v)$ be the actual betweenness centrality of node $v$ and $b'(v)$ be the betweenness centrality returned by algorithm 1. Then following lemma holds:
-
-\begin{mylemma}
-With probability atleast $1-\delta$, all the approximations computed by the algorithm are within $\epsilon$ from their real value:
-$$Pr(\exists v \in V s.t. |b(v) - b'(v)| > \epsilon) < \delta$$
-\end{mylemma}
+Second is to sample shortest paths. Assume that two vertices $u$ and $v$ are connected. Shortest paths are sampled from backward using weighted random sampling. Let $S$ we the path we want to sample. Initially, $S = \{v\}$. For all nodes that are predecessors of $v$ on shortest paths from $u$ to $v$, each node will have different probability to get sampled. This probability can be calculated using method similar to aggregation method used in Brandes algorithm.  We keep on adding nodes to $S$ until we hit the source node $u$. In this way a single shortest path is sampled from all shortest paths between $u$ and $v$.
 
 The runtime of this algorithm is dominated by the computation of shortest path at each step which takes time $O(|V| + |E|)$ if graph is unweighted (BFS) and $O(|E| + |V|log|V|)$ othewise (Dijkstra's algorithm). This is multiplied by $r$ for $r$ iterations to obtain final complexity.
 
