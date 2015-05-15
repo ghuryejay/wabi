@@ -80,7 +80,7 @@ Assembling metagenomic data is a challenging task due to several reasons. One of
 
 \section{Introduction}
 
-Metagenomic data are considerably more complex. The assembly of metagenomic data is complicated due to several reasons. Few of them are: (i) widely different levels of representation for different organisms in a community; (ii) genomic variation between closely related organisms; (iii) conserved genomic regions shared by distantly related organims; and (iv) repetitive sequences within individual genomes. Genomic repeats are the major challenge when assembling isolated genomes and their effect is prominently seen in metagenomic datasets. It has been shown by Kingsford et al.\cite{kingsford} that the number of reconstructions grow exponentially with the number of repeats. Therefore it is impossible find one correct solution for assembly. There are several approaches such as \cite{bambus} to find repeats in metagenomic data. The main drawback of these methods is that they do not scale well as number of nodes in assembly graph increase and prove very inefficient as number of nodes reaches to about a million. To tackle this problem, we explore some of the work in social network analysis, particularly in the area of node centrality. We make use of betweenness centrality to find out repeats in assembly graph. 
+Metagenomic data are considerably more complex. The assembly of metagenomic data is complicated due to several reasons. Few of them are: (i) widely different levels of representation for different organisms in a community; (ii) genomic variation between closely related organisms; (iii) conserved genomic regions shared by distantly related organims; and (iv) repetitive sequences within individual genomes. Genomic repeats are the major challenge when assembling isolated genomes and their effect is prominently seen in metagenomic datasets. It has been shown by Kingsford et al.\cite{kingsford} that the number of reconstructions grow exponentially with the number of repeats. Therefore it is computationally infeasible to find one correct solution for assembly. There are several approaches, such as \cite{bambus}, to find repeats in metagenomic data. The main drawback of these methods is that they do not scale well as number of nodes in assembly graph increase and prove very inefficient as number of nodes reaches to about a million. To tackle this problem, we explore some of the work in social network analysis, particularly in the area of node centrality. We make use of betweenness centrality to find out repeats in assembly graph. 
 
 \section{Related Work}
 
@@ -91,7 +91,7 @@ $$g(v) = \sum_{s \neq t \neq v} \frac{\sigma_{st}(v)}{\sigma_{st}}$$
 
 where $\sigma_{st}$ is the total number of shortest paths from node $s$ to node $t$ and $\sigma_{st}(v)$ is the number of those paths passing through $v$.
 
-Brandes\cite{brandes} gives an exact algorithm for computing betweenness centrality of all the nodes that is based on solving a single source shortest path problem for each node. An SSSP computation from $s$ produces a directed acyclic graph (DAG) encoding all shortest paths starting at $s$. By backward aggregation of counter values, the contributions of these paths to the betweenness counters can be computed in linear time. Brandes algorithm explains how to calculate $\sigma_{st}$ on the fly during shortest path calculations: $\sigma_{ss} = 1$ and for $s \neq t, \sigma_{st} = \sum_{v \in pred(t)} \sigma_{sv}$ where $pred(t)$ is a multiset containing the immediate predecessors of  $t$ in the shortest path DAG. In a subsequent aggregation phase, the nodes are processed in reverse topological order, i.e. by non-decreasing distance from $s$. So we have: 
+Brandes\cite{brandes} gives an exact algorithm for computing betweenness centrality of all the nodes that is based on solving a single source shortest path (SSSP) problem for each node. An SSSP computation from $s$ produces a directed acyclic graph (DAG) encoding all shortest paths starting at $s$. By backward aggregation of counter values, the contributions of these paths to the betweenness counters can be computed in linear time. Brandes algorithm explains how to calculate $\sigma_{st}$ on the fly during shortest path calculations: $\sigma_{ss} = 1$ and for $s \neq t, \sigma_{st} = \sum_{v \in pred(t)} \sigma_{sv}$ where $pred(t)$ is a multiset containing the immediate predecessors of  $t$ in the shortest path DAG. In a subsequent aggregation phase, the nodes are processed in reverse topological order, i.e. by non-decreasing distance from $s$. So we have: 
 $$\delta_{s}(v) = \sum_{w \in succ(v)} \frac{\sigma_{sv}}{\sigma_{sw}}(1+\delta_{s}(w))$$
 
 where $\delta_{s}(v) = \frac{\sigma_{st}(v)}{\sigma_{st}}$ and $succ(v)$ is an immediate successor of $v$  in the shortest path DAG.   
@@ -124,7 +124,7 @@ This algorithm is efficiently implemented using two techniques. First one is \te
 \begin{figure*}[htbp]
 \centering
 \includegraphics[width=\textwidth]{es_mix_200kb_k21.png}
-\caption{Assembly graph of a simulated community consisting of 200 Kbp subsets of \textit{Escherichia coli} str. K-12 MG1655 and emph{Staphylococcus aureus}.  Nodes are colored and sized based on their relative betweenness centrality. The highlighted nodes are inter-genomic repeats whose deletion would separate the graph.}
+\caption{Assembly graph of a simulated community consisting of 200 Kbp subsets of \textit{Escherichia coli} str. K-12 MG1655 and \textit{Staphylococcus aureus}.  Nodes are colored and sized based on their relative betweenness centrality. The highlighted nodes are inter-genomic repeats whose deletion would separate the graph.}
 \label{fig:sampled_nodes}
 \end{figure*}
 
@@ -184,11 +184,16 @@ The runtime of this algorithm is dominated by the computation of shortest path a
 
 \section{Methods}
 
-\subsection*{De Bruijn Graph} 
 
-De Bruijn strings are a type of 'comprehensive' strings. For a given alphabet $\Sigma = \{A,C,T,G\}$ and a length $k$, a de Bruijn string of order $k$ contains as substrings of length $k$ over $\Sigma$. These strings can be represented in a sophisticated way in term of a graph called de Bruijn graph \cite{debruijn}. A de Bruijn graph of order $k$ is a graph that contains all strings of length $k-1$ from a given alphabets as nodes and contains edges between two nodes if the corresponding strings overlap by exactly $k-2$ letters in prefix-suffix manner. In other words, each $k$-mer is represented by two nodes in a graph connected by an edge. 
+\subsection*{Simulating Metagenomic Assembly Repeat Graphs}
 
-We modify the de Bruijn graph generated from genomes to identify repeats in a better way. We define \textit{unipaths} as the path of nodes in which the outdegree of first node on the path is $1$ and indegree is greater than $1$, indegree of last node on the path is $1$ and outdegree is greater than $1$ and for all other nodes, both indegree and out degree is exactly $1$. We compress all the unipaths in a graph to represent in a compact way. For all the internal nodes on unipaths, we represent them by a single node with label as the combined label of all nodes. figure\ref{fig:repeatgraph} shows an example of such compression of unipaths in de Bruijn graphs. 
+We evaluate the efficacy of detecting inter-genomic repeats using the approximate betweenness centrality methods on simulated metagenomic assembly graphs.
+The first step is to construct the \textit{de Bruijn} graph from the set of reference genomes.
+De Bruijn strings are a type of ``comprehensive'' strings. For a given alphabet $\Sigma = \{A,C,T,G\}$ and a length $k$, a de Bruijn string of order $k$ contains as substrings of length $k$ over $\Sigma$. These strings can be represented in a sophisticated way in term of a graph called de Bruijn graph \cite{debruijn}. A de Bruijn graph of order $k$ is a graph that contains all strings of length $k-1$ from a given alphabets as nodes and contains edges between two nodes if the corresponding strings overlap by exactly $k-2$ letters in prefix-suffix manner. In other words, each $k$-mer is represented by two nodes in a graph connected by an edge. 
+
+Next we modify the de Bruijn graph generated from genomes to identify repeats in a better way. We define \textit{unipaths} as the path of nodes in which the outdegree of first node on the path is $1$ and indegree is not equal to $1$, indegree of last node on the path is $1$ and outdegree is not equal to $1$ and for all other nodes along the path, both indegree and out degree is exactly $1$. We compress all the unipaths in a graph to represent the path in a compact way. We represent the unipath as a single node whose label is the concatenation of all node labels along the path.
+Nodes in the resulting graph represent uniquely resolvable sequences of length $>= k$.
+Figure~\ref{fig:repeatgraph} shows an example of such compression of unipaths in de Bruijn graphs.
 
 \begin{figure}[htbp]
 \centering
@@ -197,59 +202,116 @@ We modify the de Bruijn graph generated from genomes to identify repeats in a be
 \label{fig:repeatgraph}
 \end{figure}
 
-\subsection*{Networkit}
-We investigated the performance of approximate betweenness centrality algorithms on the metagenomic graphs to find inter-genome repeats. We used the implementations provided by  Networkit\cite{networkit} library. NetworKit is an open source library for high-performance network analysis. It implements effecient graph algorithms and parallelize most of them. It provides implementation for variety of centrality measures. We used the implementation of approximate betweenness centrality. NetworKit provides parallelized implementation of the algorithm by Matteo et al.\cite{matteo} which is based on sampling shortest paths. It also provides implementation for the algorithm by Geisberger et al.\cite{sanders}. However, this algorithm is not parallelized. 
+For evaluation we simulate metagenomic assembly graphs consisting of two, five, and ten bacterial genomes.
+The composition of each simulated sample is described in Table \ref{tab:composition}.
+For the five and ten metagenome samples, random bacterial genomes were chosen from the data set provided by \cite{shakya2013comparative}.
+A $k$-mer size of 55 was chosen for initial creation of the de Bruijn graph.
+
+\begin{table}[h]
+\centering
+\caption[]{Composition of simulated metagenomic assembly graph.}
+\begin{tabular}{lllll}
+name & genomes & nodes & edges \\
+\hline
+2-genome & \textit{Escherichia coli} str. K-12, \textit{Staphylococcus aureus}  & 3,384 & 4,534 \\
+5-genome & \textit{Burkholderia xenovorans} LB400, \textit{Archaeoglobus fulgidus} DSM 4304, & 5,114 & 6,844 \\
+& \textit{Pyrobaculum calidifontis} JCM 11548, \textit{Zymomonas mobilis subsp. mobilis} ZM4, \\
+& \textit{Porphyromonas gingivalis} ATCC 33277  \\
+10-genome  & \textit{Caldicellulosiruptor bescii} DSM 6725, \textit{Bacteroides vulgatus} ATCC 8482, & 25,425 & 34,056\\
+& \textit{Bacteroides thetaiotaomicron} VPI-5482, \textit{Clostridium thermocellum} ATCC 27405, \\
+& \textit{Pyrobaculum arsenaticum} DSM 13514, \textit{Chlorobium phaeobacteroides} DSM 266, \\
+& \textit{Ruegeria pomeroyi} DSS-3, \textit{Treponema denticola} ATCC 35405, \\
+& \textit{Porphyromonas gingivalis} ATCC 33277, \textit{Nostoc sp.} PCC 7120  \\
+\hline 
+\end{tabular}
+\label{tab:composition}
+\end{table}
+
+\subsection*{\textsc{NetworKit}}
+We investigate the performance of approximate betweenness centrality algorithms on the metagenomic graphs to find inter-genome repeats. We used the implementations provided by \textsc{NetworKit}\cite{networkit} library. \textsc{NetworKit} is an open source library for high-performance network analysis. It implements effecient graph algorithms and parallelize most of them. It provides implementation for variety of centrality measures. We used the implementation of approximate betweenness centrality. \textsc{NetworKit} provides parallelized implementation of the algorithm by Matteo et al.\cite{matteo} which is based on sampling shortest paths. It also provides implementation for the algorithm by Geisberger et al.\cite{sanders}. However, this algorithm is not parallelized. 
 
 
 \subsection*{Cutoff Criteria For Repeats}
 To determine which nodes in a graph should be marked as repeats, we define a criteria based on the value of centrality calculated by the algorithm. Let $x$ be the mean of centralities of all the nodes and $\sigma$ be the standard deviation. A node $v$ is marked as repeat only if the following condition holds: $b(v) \geq x + c*\sigma$ where $c$ is a constant and $b(v)$ is betweenness centrality of the node. We set value of $c$ as 3 as it works out the best.
 
-Another cutoff criteria we test is based on \textit{interquartile range(IQR)}. Let $Q_{1}$,$Q_{2}$, and $Q_{3}$ denote lower, middle and upper quartile respectiely. IQR can be defined as the difference between the upper and lower quartile. So, $IQR = Q_{3} - Q_{1}$. For the values of centrality, we calculate upper quartile, middle quartile, lower quartile and IQR. For filtering, we mark all the nodes with centrality more than $Q_{2} + 1.5*IQR$ as repeats. The advantage of this method is that it does not make any assumptions about the distribution of underlying data.  
+Another cutoff criteria we test is based on \textit{interquartile range(IQR)}. Let $Q_{1}$,$Q_{2}$, and $Q_{3}$ denote lower, middle and upper quartile respectiely. IQR can be defined as the difference between the upper and lower quartile. So, $IQR = Q_{3} - Q_{1}$. For the values of centrality, we calculate upper quartile, middle quartile, lower quartile and IQR. For filtering, we mark all the nodes with centrality more than $Q_{3} + 1.5*IQR$ as repeats. The advantage of this method is that it does not make any assumptions about the distribution of underlying data.  
 
 \section{Results} 
-We evaluated algorithms for betweenness centrality to find inter-genome repeats on real datasets described above. We use the notion of sensitivity and specificity to define the accuracy of repeat detection. A good repeat detection strategy should have both high sensitivity and specificity. Sensitivity is the measure of proportion of actual repeats which are correctly identified by the algorithm. Specificity is the proportion of non-repeats correctly identified by the algorithm. High sensitivity is desired because we want to remove as many repeats from the graph. High specificity is desired becasue we do not want to remove non-repeats which are incorrectly identified as repeats by algorithm. To calculate sensitivity and specificity, we define following terms:
+We evaluate the effect of using approximation algorithms for betweenness centrality on finding inter-genome repeats using the simulated datasets described above.
+%We use the notion of Sensitivity, specificity, and precision to define the quality of repeat detection.
+A good repeat detection strategy should have high sensitivity, specificity, and precision. Sensitivity is the measure of proportion of actual repeats which are correctly identified by the algorithm. Specificity is the proportion of non-repeats correctly identified by the algorithm. Precision is the proportion of repeats identified that are correct. High sensitivity is desired because we want to remove as many repeats from the graph. High specificity is desired because we do not want to remove non-repeats which are incorrectly identified as repeats by algorithm. High precision helps us determine the usefulness of our methods. To calculate sensitivity, specificity, and precision, we define following terms:
 \begin{itemize}
-\item \textbf{True positives(TP):} Number of nodes marked as repeat that is found within at least 2 genomes
-\item \textbf{False positives(FP):} Number of nodes marked as repeat that is only repetitive within a single genome
-\item \textbf{True negatives(TN):} Number of nodes marked as non-repeat that is only repetitive within a single genome
-\item \textbf{False negatives(FN):} Number of nodes marked as non-repeat that is found within at least 2 genomes
+\item \textbf{True positives(TP):} Number of nodes marked as a repeat that is found within at least 2 genomes
+\item \textbf{False positives(FP):} Number of nodes marked as a repeat that is only found within a single genome
+\item \textbf{True negatives(TN):} Number of nodes marked as a non-repeat that is only found within a single genome
+\item \textbf{False negatives(FN):} Number of nodes marked as a non-repeat that is found within at least 2 genomes
 \end{itemize}
 
 Using these quantities, we can define sensitivity and specificity as follows:
  $$Sensitivity = \frac{TP}{TP+FN}$$
  $$Specificity = \frac{TN}{TN+FP}$$
+ $$Precision = \frac{TP}{TP + FP}$$
 
+For evaluating the effect of node sampling on inter-genomic repeat detection, we sample between 10 to 10,000 nodes per trial.
+For evaluating path sampling, we select epsilon parameters between 0.01 and 0.20.
+The result of each parameter is averaged over 10 trials.
+
+\subsection*{Approximate Betweenness Centrality Retains Detection Power of Inter-Genomic Repeats}
+
+Across all data sets, the more nodes and paths sampled, the better the inter-genomic repeat detection (Figures \ref{fig:sampled_nodes} and \ref{fig:sampled_paths}).
+Furthermore, the runtime increases linearly with the number of nodes sampled (Figure \ref{fig:sampled_nodes}).
+In the 2-genome assembly graph, all inter-genomic repeats were found by sampling as few as ten nodes, an order of magnitude less time than calculating the betweenness centrality using the full graph.
+In the 5-genome assembly graph, sampling 10 nodes has a sensitivity of 86\% and reaches 100\% at 500 nodes which is approximately one-tenth the size of the assembly graph.
+The sensitivity drops off drastically in the 10-genome assembly graph, oscillating around 6\% across all node sample sizes.
+While the specificity remains consistent across data sets (97\%-99\%), the precision increases from ~2.5\% to ~25\% when going from the 2-genome to the 10-genome data set.
+
+For the range of epsilon parameters used, the statistical measures of repeat detection remain constant (Figure \ref{fig:sampled_paths}).
+Similarly, the runtime for each epsilon parameter remains relatively unchanged except for a slight change in the 10-genome sample.
+For the 10-genome sample, the statistical measures and runtime are equivalent to when 100-500 nodes are sampled.
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width = \textwidth]{sampled_nodes}
-\caption{Example of conversion of de Bruijn graph to Repeats graph}
+\caption{Statistical measures of repeat detection quality for the simulated metagenomic assembly graphs. Betweenness centrality was approximated by randomly sampling nodes in the graph.}
 \label{fig:sampled_nodes}
 \end{figure}
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width = \textwidth]{sampled_paths}
-\caption{Example of conversion of de Bruijn graph to Repeats graph}
-\label{fig:sampled_nodes}
+\caption{Statistical measures of repeat detection quality for the simulated metagenomic assembly graphs. Betweenness centrality was approximated within epsilon of their true value.}
+\label{fig:sampled_paths}
 \end{figure}
 
+\subsection*{Alternate Betweenness Centrality Cutoff Increases Sensitivity}
+
+Decreasing the betweenness centrality cutoff requirement results in a trade-off between the different statistical measures.
+Instead of using the default cutoff of $3\sigma$ suggested by Bambus2, we mark all the nodes with centrality more than $Q_{3} + 1.5*IQR$ as an inter-genomic repeats.
+In the 10-genome assembly graph, the sensitivity increases from 5.8\% to 34.4\% when using the \textsc{iqr} cutoff method (Table \ref{tab:cutoffs}).
+Conversely, the specificity and and precision drops from 99.3\% to 90.9\% and 25\% to 12.5\%, respectively.
 
 \begin{table}[h]
 \centering
-\caption[]{Statistical measures of performance using different cutoff levels for marking a node as an inter-genomic repeat on the simulated 10 genome assembly graph.  $c=3$ is Bambus2's default cutoff level and \textsc{irq} utilizes the different quartile values. }
+\caption[]{Statistical measures of performance using different cutoff levels for marking a node as an inter-genomic repeat on the simulated 10 genome assembly graph. $c=3$ is Bambus2's default cutoff level and \textsc{irq} utilizes the different quartile values.}
 \begin{tabular}{lllll}
- & $c=3$        & \textsc{irq}   \\
+ & $c=3$        & \textsc{iqr}   \\
 \hline
 sensitivity & 0.0584 & 0.344 \\
 specificity & 0.993  & 0.909 \\
 precision   & 0.250  & 0.125 \\
 \hline 
 \end{tabular}
+\label{tab:cutoffs}
 \end{table}
 
+\section{Discussion}
+Betweenness centrality is a proven method for finding inter-genomic repeats in metagenomic assemblies.
+The size of typical metagenomic assembly graphs often make it infeasible to calculate the exact betweenness centrality of each node.
+We have taken the first steps to show how recent approximation algorithms for calculating betweenness centrality can be used retain the same repeat detection power as the exact algorithms in a fraction of the time.
+In the future, larger and more complex metagenomic assembly graphs must be used to further evaluate the efficacy of the approximation algorithms.
+
 \section{Conclusion}
-In this work, we show how approximate betweenness centrality can be used to identify inter-genome repeats. We explored two algorithms, one based on sampling shortest paths in a graph and other based on sampling nodes in a graph. Application of both these algorithms to repeat detection problem provided significantly accurate and fast results. We explore how various parameters such as number of sampled nodes and filtering criteria to mark a node as repeat affects the accuracy of repeat detection. We are planning to use these techniques for repeat detection in our future metagenomic assembler. 
+In this work, we show how approximate betweenness centrality can be used to identify inter-genome repeats. We explored two algorithms, one based on sampling shortest paths in a graph and other based on sampling nodes in a graph. Application of both these algorithms to repeat detection problem provided accurate and fast results. We explore how various parameters such as number of sampled nodes and filtering criteria to mark a node as repeat affects the accuracy of repeat detection. We are planning to use these techniques for repeat detection in our future metagenomic assembler. 
 \bibliography{manuscript}{}
 \bibliographystyle{abbrv}
 
