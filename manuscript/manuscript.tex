@@ -25,6 +25,7 @@
 \newtheorem{mydef}{Definition}
 \newtheorem{mylemma}{Lemma}
 \usepackage{algorithm}
+\usepackage{tabularx}
 \usepackage[noend]{algpseudocode}
 
 
@@ -73,19 +74,19 @@
 
 
 \begin{abstract}
-Assembling metagenomic data is a challenging task due to several reasons. One of the reasons that complicates assembly is the sequences shared between the genomes of multiple organisms. Such regions in genomes are called repeats. Repeats make assembly difficult because they link the unrelated sections of genomes. It has been shown that the number of reconstructions of genome grows exponentially with repeats. Existing approaches to identify repeats are inefficient and do not scale well as size of data increases. We propose an application of a core concept in social network analysis called betweenness centrality to metagenomic data to identify inter-genomic repeats. We study how approximation algorithms for betweenness centrality can be useful to find central nodes quickly and propose a novel approach to identify inter-genomic repeats accurately. 
+Assembling metagenomic data is a challenging task due to several reasons. One of the reasons that complicates assembly is the sequences shared between the genomes of multiple organisms. Such regions in genomes are called repeats. Repeats make assembly difficult because they link the unrelated sections of genomes. It has been shown that the number of reconstructions of genome grows exponentially with repeats. Existing approaches to identify repeats are inefficient and do not scale well as size of data increases. We propose an application of a core concept in social network analysis called betweenness centrality to metagenomic data to identify inter-genomic repeats. We show how approximation algorithms for betweenness centrality can be useful to design a faster approach to identify inter-genomic repeats accurately. 
 \keywords{Metagenomics, Algorithms, Centrality, Graph}
 \end{abstract}
 
 
 \section{Introduction}
 
-Metagenomic data are considerably more complex. The assembly of metagenomic data is complicated due to several reasons. Few of them are: (i) widely different levels of representation for different organisms in a community; (ii) genomic variation between closely related organisms; (iii) conserved genomic regions shared by distantly related organims; and (iv) repetitive sequences within individual genomes. Genomic repeats are the major challenge when assembling isolated genomes and their effect is prominently seen in metagenomic datasets. It has been shown by Kingsford et al.\cite{kingsford} that the number of reconstructions grow exponentially with the number of repeats. Therefore it is computationally infeasible to find one correct solution for assembly. There are several approaches, such as \cite{bambus}, to find repeats in metagenomic data. The main drawback of these methods is that they do not scale well as number of nodes in assembly graph increase and prove very inefficient as number of nodes reaches to about a million. To tackle this problem, we explore some of the work in social network analysis, particularly in the area of node centrality. We make use of betweenness centrality to find out repeats in assembly graph. 
+Metagenomic data are considerably more complex. The assembly of metagenomic data is complicated due to several reasons. Few of them are: (i) widely different levels of representation for different organisms in a community; (ii) genomic variation between closely related organisms; (iii) conserved genomic regions shared by distantly related organims; and (iv) repetitive sequences within individual genomes. Genomic repeats are the major challenge when assembling isolated genomes and their effect is prominently seen in metagenomic datasets. It has been shown by Kingsford et al.\cite{kingsford} that the number of reconstructions grow exponentially with the number of repeats. Therefore it is computationally infeasible to find one correct solution for assembly.  To tackle this problem, several assemblers have used the notion of network centrality to find repeats. For example, Bambus2\cite{bambus} uses betweenness centrality to find central nodes in graphs. The drawback of their approach is that they calculate exact betweenness centrality by computing all pair shortest paths. This approach is very slow when applied to large assembly graphs. To overcome this drawback, we explore how can we apply approximate betweenness centrality to assembly graphs and find inter-genomic repeats accurately. The reason for using approximation algorithms is that they scale well as the size of graphs increase. We also investigate how parallelized implementation of these algorithms provide speedups in detecting repeats. 
 
 \section{Related Work}
 
 \subsection*{Betweenness Centrality}
-In graph theory and network analysis, indicators of centrality identify the most important vertices within a graph. :Several metrics to measure centrality have been proposed. We make use of betweenness centrality. For a particular node, betweenness centrality is equal to the number of shortest paths from all vertices to all others that pass through that node. Formally, for a node $v$, it is defined by following expression:
+In graph theory and network analysis, indicators of centrality identify the most important vertices within a graph. Several metrics to measure centrality have been proposed. We make use of betweenness centrality. For a particular node, betweenness centrality is equal to the number of shortest paths from all vertices to all others that pass through that node. Formally, for a node $v$, it is defined by following expression:
 
 $$g(v) = \sum_{s \neq t \neq v} \frac{\sigma_{st}(v)}{\sigma_{st}}$$
 
@@ -162,25 +163,26 @@ A $k$-mer size of 55 was chosen for initial creation of the de Bruijn graph.
 \begin{table}[h]
 \centering
 \caption[]{Composition of simulated metagenomic assembly graph.}
-\begin{tabular}{lllll}
-name & genomes & nodes & edges \\
+\begin{tabularx}{\linewidth}{|l|X|l|l|}
+\hline
+\textbf{Name} & \textbf{Genomes} & \textbf{Nodes} & \textbf{Edges} \\
 \hline
 2-genome & \textit{Escherichia coli} str. K-12, \textit{Staphylococcus aureus}  & 3,384 & 4,534 \\
-5-genome & \textit{Burkholderia xenovorans} LB400, \textit{Archaeoglobus fulgidus} DSM 4304, & 5,114 & 6,844 \\
-& \textit{Pyrobaculum calidifontis} JCM 11548, \textit{Zymomonas mobilis subsp. mobilis} ZM4, \\
-& \textit{Porphyromonas gingivalis} ATCC 33277  \\
-10-genome  & \textit{Caldicellulosiruptor bescii} DSM 6725, \textit{Bacteroides vulgatus} ATCC 8482, & 25,425 & 34,056\\
-& \textit{Bacteroides thetaiotaomicron} VPI-5482, \textit{Clostridium thermocellum} ATCC 27405, \\
-& \textit{Pyrobaculum arsenaticum} DSM 13514, \textit{Chlorobium phaeobacteroides} DSM 266, \\
-& \textit{Ruegeria pomeroyi} DSS-3, \textit{Treponema denticola} ATCC 35405, \\
-& \textit{Porphyromonas gingivalis} ATCC 33277, \textit{Nostoc sp.} PCC 7120  \\
+\hline
+5-genome & \textit{Burkholderia xenovorans} LB400, \textit{Archaeoglobus fulgidus} DSM 4304,  \textit{Pyrobaculum calidifontis} JCM 11548, \textit{Zymomonas mobilis subsp. mobilis} ZM4, \textit{Porphyromonas gingivalis} ATCC 33277 & 5,114 & 6,844  \\
+\hline
+10-genome  & \textit{Caldicellulosiruptor bescii} DSM 6725, \textit{Bacteroides vulgatus} ATCC 8482, 
+ \textit{Bacteroides thetaiotaomicron} VPI-5482, \textit{Clostridium thermocellum} ATCC 27405, 
+ \textit{Pyrobaculum arsenaticum} DSM 13514, \textit{Chlorobium phaeobacteroides} DSM 266, 
+ \textit{Ruegeria pomeroyi} DSS-3, \textit{Treponema denticola} ATCC 35405, 
+ \textit{Porphyromonas gingivalis} ATCC 33277, \textit{Nostoc sp.} PCC 7120  & 25,425 & 34,056\\
 \hline 
-\end{tabular}
+\end{tabularx}
 \label{tab:composition}
 \end{table}
 
 \subsection*{\textsc{NetworKit}}
-We investigate the performance of approximate betweenness centrality algorithms on the metagenomic graphs to find inter-genome repeats. We used the implementations provided by \textsc{NetworKit}\cite{networkit} library. \textsc{NetworKit} is an open source library for high-performance network analysis. It implements effecient graph algorithms and parallelize most of them. It provides implementation for variety of centrality measures. We used the implementation of approximate betweenness centrality. \textsc{NetworKit} provides parallelized implementation of the algorithm by Matteo et al.\cite{matteo} which is based on sampling shortest paths. It also provides implementation for the algorithm by Geisberger et al.\cite{sanders}. However, this algorithm is not parallelized. 
+We investigate the performance of approximate betweenness centrality algorithms on the metagenomic graphs to find inter-genome repeats. We used the implementations provided by \textsc{NetworKit}\cite{networkit} library. \textsc{NetworKit} is an open source library for high-performance network analysis. It implements effecient graph algorithms and parallelize most of them. It provides implementation for variety of centrality measures. We used the implementation of approximate betweenness centrality. For our experiments, we use the parallelized implementation for the algorithm by Matteo et al.\cite{matteo} and serial implementation for the algorithm by Geisberger et al.\cite{sanders}.
 
 
 \subsection*{Cutoff Criteria For Repeats}
@@ -245,8 +247,9 @@ Conversely, the specificity and and precision drops from 99.3\% to 90.9\% and 25
 \begin{table}[h]
 \centering
 \caption[]{Statistical measures of performance using different cutoff levels for marking a node as an inter-genomic repeat on the simulated 10 genome assembly graph. $c=3$ is Bambus2's default cutoff level and \textsc{irq} utilizes the different quartile values.}
-\begin{tabular}{lllll}
- & $c=3$        & \textsc{iqr}   \\
+\begin{tabular}{|l|l|l|}
+\hline
+Measure & $c=3$ & \textsc{iqr}   \\
 \hline
 sensitivity & 0.0584 & 0.344 \\
 specificity & 0.993  & 0.909 \\
