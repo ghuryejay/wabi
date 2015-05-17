@@ -81,7 +81,7 @@ Assembling metagenomic data is a challenging task due to several reasons. One of
 
 \section{Introduction}
 
-Metagenomic data are considerably more complex. The assembly of metagenomic data is complicated due to several reasons. Few of them are: (i) widely different levels of representation for different organisms in a community; (ii) genomic variation between closely related organisms; (iii) conserved genomic regions shared by distantly related organims; and (iv) repetitive sequences within individual genomes. Genomic repeats are the major challenge when assembling isolated genomes and their effect is prominently seen in metagenomic datasets. It has been shown by Kingsford et al.\cite{kingsford} that the number of reconstructions grow exponentially with the number of repeats. Therefore it is computationally infeasible to find one correct solution for assembly.  To tackle this problem, several assemblers have used the notion of network centrality to find repeats. For example, Bambus2\cite{bambus} uses betweenness centrality to find central nodes in graphs. The drawback of their approach is that they calculate exact betweenness centrality by computing all pair shortest paths. This approach is very slow when applied to large assembly graphs. To overcome this drawback, we explore how can we apply approximate betweenness centrality to assembly graphs and find inter-genomic repeats accurately. The reason for using approximation algorithms is that they scale well as the size of graphs increase. We also investigate how parallelized implementation of these algorithms provide speedups in detecting repeats. 
+Metagenomic data are considerably more complex. The assembly of metagenomic data is complicated due to several reasons. Few of them are: (i) widely different levels of representation for different organisms in a community; (ii) genomic variation between closely related organisms; (iii) conserved genomic regions shared by distantly related organims; and (iv) repetitive sequences within individual genomes. Genomic repeats are the major challenge when assembling isolated genomes and their effect is prominently seen in metagenomic datasets. It has been shown that the number of reconstructions grow exponentially with the number of repeats\cite{kingsford}. Therefore it is computationally infeasible to find one correct solution for assembly.  To tackle this problem, several assemblers have used the notion of network centrality to find repeats. For example, Bambus2\cite{bambus} uses betweenness centrality to find central nodes in graphs. The drawback of their approach is that they calculate exact betweenness centrality by computing all pair shortest paths. This approach is very slow when applied to large assembly graphs. To overcome this drawback, we explore how can we apply approximate betweenness centrality to assembly graphs and find inter-genomic repeats accurately. The reason for using approximation algorithms is that they scale well as the size of graphs increase. We also investigate how parallelized implementation of these algorithms provide speedups in detecting repeats. 
 
 \section{Related Work}
 
@@ -92,14 +92,14 @@ $$g(v) = \sum_{s \neq t \neq v} \frac{\sigma_{st}(v)}{\sigma_{st}}$$
 
 where $\sigma_{st}$ is the total number of shortest paths from node $s$ to node $t$ and $\sigma_{st}(v)$ is the number of those paths passing through $v$.
 
-Brandes\cite{brandes} gives an exact algorithm for computing betweenness centrality of all the nodes that is based on solving a single source shortest path (SSSP) problem for each node. An SSSP computation from $s$ produces a directed acyclic graph (DAG) encoding all shortest paths starting at $s$.   The contributions of these paths to the betweenness counters can be computed in linear time using backward aggregation. Brandes algorithm explains how to calculate $\sigma_{st}$ on simultaneously with shortest path calculations: $\sigma_{ss} = 1$ and for $s \neq t, \sigma_{st} = \sum_{v \in pred(t)} \sigma_{sv}$ where $pred(t)$ is a collection of the immediate predecessors of  $t$ on every shortes path ending at $t$. In a subsequent aggregation phase, nodes are procesed by non-decreasing distance from $s$. So we have: 
+Brandes\cite{brandes} gives an exact algorithm for computing betweenness centrality of all the nodes that is based on solving a single source shortest path (SSSP) problem for each node. An SSSP computation from $s$ produces a directed acyclic graph (DAG) encoding all shortest paths starting at $s$.   The contributions of these paths to the betweenness counters can be computed in linear time using backward aggregation. Brandes algorithm calculates $\sigma_{st}$  simultaneously with shortest path calculations: $\sigma_{ss} = 1$ and for $s \neq t, \sigma_{st} = \sum_{v \in pred(t)} \sigma_{sv}$ where $pred(t)$ is a collection of the immediate predecessors of  $t$ on every shortes path ending at $t$. In a subsequent aggregation phase, nodes are procesed by non-decreasing distance from $s$. So we have: 
 $$\delta_{s}(v) = \sum_{w \in succ(v)} \frac{\sigma_{sv}}{\sigma_{sw}}(1+\delta_{s}(w))$$
 
 where $\delta_{s}(v) = \frac{\sigma_{st}(v)}{\sigma_{st}}$ and $succ(v)$ is an immediate successor of $v$  in the shortest path DAG.   
-This algorithm takes time $\Theta(mn)$ for unit edge weight graphs and $\Theta(mn + n^{2}log(n))$ for weighted graphs. This algorithm does not scale well with large networks with millions of nodes and edges. Bader and Madduri\cite{bader} provide a massively parallel implementation of the exact algorithm. However this approach scales to about a few million nodes and can not be fast enough for larger assembly graphs. 
+This algorithm takes time $\Theta(mn)$ for unit edge weight graphs and $\Theta(mn + n^{2}log(n))$ for weighted graphs. This algorithm does not scale well with large networks with millions of nodes and edges. Bader and Madduri\cite{bader} provide a massively parallel implementation of the exact algorithm. However this approach scales to about a few million nodes and may not be fast enough for larger assembly graphs. 
 
 \subsection*{Betweenness Centrality Based on Sampling Nodes}
-Due to scalability limitations of exact betweenness centrality, several approximation algorithms for betweenness centrality have been proposed. Bader and Pich\cite{bp} provide an approximation algorithm by choosing a subset of $k$ starting nodes called pivots and using same aggregation strategy as exact betweeness centrality algorithm. However, this algorithm overestimates the centrality of some unimportant nodes which are nearer to pivots. The approximation algorithm proposed by Geisberger et al. \cite{sanders} comes over this drawback by changing the scheme for aggregating betweenness contributions so that nodes nearer to pivots are not unduly profited. The algorithm starts with the sample of $k$ nodes from $|V| = n$ nodes in graph. In each iteration, it chooses one of $2n$ shortest path at random. Here there are $2n$ sample shortest paths because algorithm can do forward search from $s \in V$ or backward search from $t \in V$ and each $s$ and $t$ can have $n$ values. Let $\delta_{P}(v)$ be the contribution received by node $v$ due to shortest path $P$. It can be shown that \cite{sanders} due to all shortes paths $P$ on which $v$ lies, $v$ receives contribution 
+Due to scalability limitations of exact betweenness centrality, several approximation algorithms for betweenness centrality have been proposed. Bader and Pich\cite{bp} provide an approximation algorithm by choosing a subset of $k$ starting nodes called pivots and using same aggregation strategy as exact betweeness centrality algorithm. However, this algorithm overestimates the centrality of some unimportant nodes which are nearer to pivots. The approximation algorithm proposed by Geisberger et al. \cite{sanders} overcomes this drawback by changing the scheme for aggregating betweenness contributions so that nodes nearer to pivots are not unduly profited. The algorithm starts with the sample of $k$ nodes from $|V| = n$ nodes in graph. In each iteration, it chooses one of $2n$ shortest path at random. Here there are $2n$ sample shortest paths because algorithm can do forward search from $s \in V$ or backward search from $t \in V$ and each $s$ and $t$ can have $n$ values. Let $\delta_{P}(v)$ be the contribution received by node $v$ due to shortest path $P$. It can be shown that \cite{sanders} due to all shortest paths $P$ on which $v$ lies, $v$ receives contribution 
 
 $$\delta(v) := \delta_{s}(v) := \sum_{t \in V}\sum \{\delta_{P}(v):  P \in SP_{st}(v)\}$$
 due to a forward search, and 
@@ -107,7 +107,7 @@ due to a forward search, and
 $$\delta(v) := \delta_{t}(v) := \sum_{s \in V}\sum \{\delta_{P}(v):  P \in SP_{st}(v)\}$$
 due to a backward search. 
 
-This algorithm is efficiently implemented using two techniques. First one is \textit{linear scaling}, where the contribution of a node $v$ depends linearly on the distance to the sample. Nearer the node is to the sample, lesser is the contribution of that sample for the that node is counted. Linear scaling is implemented using a simple variant of aggregation scheme proposed in Brandes algorithm. Second technique is \textit{bisection scaling} where the sample only contributes to the second half of a path. This means that for a vertex $v$, the contribution of sample is considered only if it is at atleast half distance between $s$ and $t$ away from $s$ in forward search or more than half a distance away from $t$ in backward search where $s$ and $t$ are nodes in sample. 
+This algorithm is efficiently implemented by modifying original aggregation scheme of Brandes algorithm so that the nodes near the sampled node will not receive high centrality score. Runtime of the algorithm largely depends on the size of the sample we choose. However,there is a tradeoff between size of sample and accuracy of centrality detection.  
 
 
 
@@ -120,19 +120,13 @@ This algorithm is efficiently implemented using two techniques. First one is \te
 
 
 \subsection*{Betweenness Centrality Based on Sampling Shortest Paths}
-Another approximation algorithm was proposed by Matteo et al. \cite{matteo} based on randomized sampling of shortest paths and offer probabilistic guarantees on the quality of approximation. This algorithm guarantees that all approximate values of betweenness for all vertices are within an additive factor $\epsilon \in (0,1)$ from the real values with probability at least $1-\delta$. To derive bounds on sample size, results from VC dimension theory\cite{vc} are used. The main advantage of this algorithm is that the sample size does not depend on the size of the graph, but only on the maximum number vertices in a shortest path which is called \textit{vertex diameter}. The Vapnik-Chernovenkis(VC) dimensions of a class of subset is defined on a set of points is a representation of expressiveness of such class. Given a probability distribution on the set of points, a finite bound on the VC-dimension of the class of subsets implies a bound on the number of random samples required to approximate the probability of each subset in the class with its empirical average. This technique is used to derive the expressiveness of the sample of shortest paths. For graph $G(V,E)$, let $S_{all}$ be the union of $T_{v}$ for all $v \in V$, where $T_{v}$ is the set of all shortest path to which $v$ is internal. VC dimension technique helps in choosing appropriate sample from $S_{all}$. It is shown that the upper bound on VC dimensions of $S_{all}$ is given by:
-$$VC(S_{all}) \leq \left\lfloor{log_{2}(VD(G) - 2)}\right\rfloor + 1$$
-where $VD(G)$ is vertex diameter of $G$. Using this upper bound, sample size $r$ can be derived as follows:
+Another approximation algorithm was proposed by Matteo et al. \cite{matteo} based on randomized sampling of shortest paths and offer probabilistic guarantees on the quality of approximation. This algorithm guarantees that all approximate values of betweenness for all vertices are within an additive factor $\epsilon \in (0,1)$ from the real values with probability at least $1-\delta$. To derive bounds on sample size, results from VC dimension theory\cite{vc} are used. The main advantage of this algorithm is that the sample size does not depend on the size of the graph, but only on the maximum number vertices in a shortest path which is called \textit{vertex diameter}. The sample size $r$ of shortest paths is found out with the help of $VD(G)$ as follows:
 \begin{equation} \label{sample_size_algo}
 r = \frac{c}{\epsilon^{2}}(\left\lfloor{log_{2}(VD(G) - 2)}\right\rfloor + 1 + ln\frac{1}{\delta})
 \end{equation} 
 where $c$ is a constant with value $0.5$. It is guaranteed that betweenness centralities estimated using this sample size are within additive factor $\epsilon$ from real values with probability atleast $1-\delta$. 
 
-There are two crucial things needed to be handled. First is computing vertex diameter. Calculating exact VD(G) will need to solve all pair shortest  path problem. The complexity of this algorithm is $O(V^{2}logV + VE)$ by Johnson's algorithm\cite{johnson} and $\Theta(V^{3})$ by Floyd-Warshall algorithm. There exits a faster linear time 2-approximation algorithm to calculate approximate vertex diameter for unweighted graph. For weighted graph, there is no relationship between VD(G) and $diam$(G) as shortest path with maximum size may not have maximum weight. For weighted graphs, VD(G) is approximated by calculating the size of largest Weekly Connected Componet(WCC). This can be done in $O(m+n)$ using Breadth First Search.  
-
-Second is to sample shortest paths. Assume that two vertices $u$ and $v$ are connected. Shortest paths are sampled from backward using weighted random sampling. Let $S$ we the path we want to sample. Initially, $S = \{v\}$. For all nodes that are predecessors of $v$ on shortest paths from $u$ to $v$, each node will have different probability to get sampled. This probability can be calculated using method similar to aggregation method used in Brandes algorithm.  We keep on adding nodes to $S$ until we hit the source node $u$. In this way a single shortest path is sampled from all shortest paths between $u$ and $v$.
-
-The runtime of this algorithm is dominated by the computation of shortest path at each step which takes time $O(|V| + |E|)$ if graph is unweighted (BFS) and $O(|E| + |V|log|V|)$ othewise (Dijkstra's algorithm). This is multiplied by $r$ for $r$ iterations to obtain final complexity.
+The algorithm estimates the vertex diameter of the graph using a simple $2-$approximation algorithm. The shortest paths are sampled using weighted random sampling. The runtime of this algorithm is dominated by the computation of shortest path at each step which takes time $O(|V| + |E|)$ if graph is unweighted (BFS) and $O(|E| + |V|log|V|)$ otherwise (Dijkstra's algorithm). This is multiplied by $r$ for $r$ iterations to obtain final complexity.
 
 
 \section{Methods}
@@ -144,16 +138,8 @@ We evaluate the efficacy of detecting inter-genomic repeats using the approximat
 The first step is to construct the \textit{de Bruijn} graph from the set of reference genomes.
 De Bruijn strings are a type of ``comprehensive'' strings. For a given alphabet $\Sigma = \{A,C,T,G\}$ and a length $k$, a de Bruijn string of order $k$ contains as substrings of length $k$ over $\Sigma$. These strings can be represented in a sophisticated way in term of a graph called de Bruijn graph \cite{debruijn}. A de Bruijn graph of order $k$ is a graph that contains all strings of length $k-1$ from a given alphabets as nodes and contains edges between two nodes if the corresponding strings overlap by exactly $k-2$ letters in prefix-suffix manner. In other words, each $k$-mer is represented by two nodes in a graph connected by an edge. 
 
-Next we modify the de Bruijn graph generated from genomes to identify repeats in a better way. We define \textit{unipaths} as the path of nodes in which the outdegree of first node on the path is $1$ and indegree is not equal to $1$, indegree of last node on the path is $1$ and outdegree is not equal to $1$ and for all other nodes along the path, both indegree and out degree is exactly $1$. We compress all the unipaths in a graph to represent the path in a compact way. We represent the unipath as a single node whose label is the concatenation of all node labels along the path.
+Next we modify the de Bruijn graph generated from genomes to identify repeats. We define \textit{unipaths} as the path of nodes in which the outdegree of first node on the path is $1$ and indegree is not equal to $1$, indegree of last node on the path is $1$ and outdegree is not equal to $1$ and for all other nodes along the path, both indegree and out degree is exactly $1$. We compress all the unipaths in a graph to represent the path in a compact way. We represent the unipath as a single node whose label is the concatenation of all node labels along the path.
 Nodes in the resulting graph represent uniquely resolvable sequences of length $>= k$.
-Figure~\ref{fig:repeatgraph} shows an example of such compression of unipaths in de Bruijn graphs.
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width = \textwidth]{repeatgraph}
-\caption{Example of conversion of de Bruijn graph to Repeats graph}
-\label{fig:repeatgraph}
-\end{figure}
 
 For evaluation we simulate metagenomic assembly graphs consisting of two, five, and ten bacterial genomes.
 The composition of each simulated sample is described in Table \ref{tab:composition}.
@@ -186,7 +172,7 @@ We investigate the performance of approximate betweenness centrality algorithms 
 
 
 \subsection*{Cutoff Criteria For Repeats}
-To determine which nodes in a graph should be marked as repeats, we define a criteria based on the value of centrality calculated by the algorithm. Let $x$ be the mean of centralities of all the nodes and $\sigma$ be the standard deviation. A node $v$ is marked as repeat only if the following condition holds: $b(v) \geq x + c*\sigma$ where $c$ is a constant and $b(v)$ is betweenness centrality of the node. We set value of $c$ as 3 as it works out the best.
+Bambus2\cite{bambus} uses exact betweenness centrality to find repeats. To filter out repeats, it calculates mean $\mu$ and standard deviation $\sigma$ over the centrality scores for all the nodes in graph. It then marks all the nodes with centrality score greater than $\mu + 3*\sigma$ as repeats. To filter out repeats based on approximate centrality scores, we use the same method as Bambus2. 
 
 Another cutoff criteria we test is based on \textit{interquartile range(IQR)}. Let $Q_{1}$,$Q_{2}$, and $Q_{3}$ denote lower, middle and upper quartile respectiely. IQR can be defined as the difference between the upper and lower quartile. So, $IQR = Q_{3} - Q_{1}$. For the values of centrality, we calculate upper quartile, middle quartile, lower quartile and IQR. For filtering, we mark all the nodes with centrality more than $Q_{3} + 1.5*IQR$ as repeats. The advantage of this method is that it does not make any assumptions about the distribution of underlying data.  
 
@@ -241,23 +227,9 @@ For the 10-genome sample, the statistical measures and runtime are equivalent to
 
 Decreasing the betweenness centrality cutoff requirement results in a trade-off between the different statistical measures.
 Instead of using the default cutoff of $3\sigma$ suggested by Bambus2, we mark all the nodes with centrality more than $Q_{3} + 1.5*IQR$ as an inter-genomic repeats.
-In the 10-genome assembly graph, the sensitivity increases from 5.8\% to 34.4\% when using the \textsc{iqr} cutoff method (Table \ref{tab:cutoffs}).
+In the 10-genome assembly graph, the sensitivity increases from 5.8\% to 34.4\% when using the \textsc{iqr} cutoff method.
 Conversely, the specificity and and precision drops from 99.3\% to 90.9\% and 25\% to 12.5\%, respectively.
 
-\begin{table}[h]
-\centering
-\caption[]{Statistical measures of performance using different cutoff levels for marking a node as an inter-genomic repeat on the simulated 10 genome assembly graph. $c=3$ is Bambus2's default cutoff level and \textsc{irq} utilizes the different quartile values.}
-\begin{tabular}{|l|l|l|}
-\hline
-Measure & $c=3$ & \textsc{iqr}   \\
-\hline
-sensitivity & 0.0584 & 0.344 \\
-specificity & 0.993  & 0.909 \\
-precision   & 0.250  & 0.125 \\
-\hline 
-\end{tabular}
-\label{tab:cutoffs}
-\end{table}
 
 \section{Discussion}
 Betweenness centrality is a proven method for finding inter-genomic repeats in metagenomic assemblies.
