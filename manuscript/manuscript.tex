@@ -242,10 +242,11 @@ For the 10-genome sample, the statistical measures and runtime are equivalent to
 \subsection*{Alternate Betweenness Centrality Cutoff Increases Sensitivity}
 
 Decreasing the betweenness centrality cutoff requirement results in a trade-off between the different statistical measures.
-Instead of using the default cutoff of $3\sigma$ suggested by Bambus2, we mark all the nodes with centrality more than $Q_{3} + 1.5*IQR$ as an inter-genomic repeats.
-In the 10-genome assembly graph, the sensitivity increases from 5.8\% to 34.4\% when using the IQR cutoff method.
+We observed that for 10-genome assembly graph, the sensitivity was very less according to the cut off criteria in Bambus2. This was due to the fact that cut off was strict and was eliminating actual repeats.
+Instead of using the cut off criteria suggested by Bambus2, we mark all the nodes with centrality more than $Q_{3} + 1.5*IQR$ as an inter-genomic repeats.
+When we use this criteria on 10-genome assembly graph, the sensitivity increases from 5.8\% to 34.4\% when using the IQR cutoff method.
 Conversely, the specificity and and precision drops from 99.3\% to 90.9\% and 25\% to 12.5\%, respectively.
-
+We could achieve better specificity at by not losing much on sensitivity.
 
 \subsection*{Results On Real Metagenomic Datasets}
 We evaluated the performance of approximate betweenness centrality algorithms on metagenomic stool sample.
