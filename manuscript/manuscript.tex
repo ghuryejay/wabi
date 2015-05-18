@@ -168,6 +168,8 @@ A $k$-mer size of 55 was chosen for initial creation of the de Bruijn graph.
 \label{tab:composition}
 \end{table}
 
+Apart from simulated metagenomic graphs, we study how approximation algorithms for betweenness centrality work on real datasets. We evaluated the runtime  of these algorithms on metagenomic stool sample of a premature infant. This graph has 3797425 nodes and 2970379 edges. We compared the performance of Bambus2's repeat detection module on this data with the performance of approximate betweenness centrality algorithms. 
+
 \subsection*{\textsc{NetworKit}}
 We investigate the performance of approximate betweenness centrality algorithms on the metagenomic graphs to find inter-genome repeats. We used the implementations provided by \textsc{NetworKit}\cite{networkit} library. \textsc{NetworKit} is an open source library for high-performance network analysis. It implements effecient graph algorithms and parallelize most of them. It provides implementation for variety of centrality measures. We used the implementation of approximate betweenness centrality. For our experiments, we use the parallelized implementation for the algorithm by Matteo et al.\cite{matteo} and serial implementation for the algorithm by Geisberger et al.\cite{sanders}.
 
@@ -196,23 +198,6 @@ Using these quantities, we can define sensitivity and specificity as follows:
 For evaluating the effect of node sampling on inter-genomic repeat detection, we sample between 10 to 10,000 nodes per trial.
 For evaluating path sampling, we select epsilon parameters between 0.01 and 0.20.
 The result of each parameter is averaged over 10 trials.
-
-\subsection*{Benchmarking Runtime of Sampling Algorithms}
-We test how the runtime of both the algorithms change as we change size of the sample. We use the k-mer graph generated from the genome of \textit{Escherichia coli} str. K-12 with 311137 nodes and 279290 edges. For the algorithm based on node sampling, we tested runtime on the sample sizes 10, 100, 1000, 10000 and 50000. It is observed that runtime increases linearly with sample size(Figure \ref{fig:bm_nodes}). For the algorithm based on shortest path sampling, we varied the value of $\epsilon$ parameter which controls the sample size. Lesser the $\epsilon$ is, higher is the sample size. It is observed that as we increased epsilon, runtime decreased(Figure \ref{fig:bm_paths}). 
-
-\begin{figure}[ht]
-\centering
-\includegraphics[width=8cm,height=5cm]{benchmarknodes}
-\caption{Plot of runtime against number of sampled nodes. It can be seen that there is a linear relation between these two.}
-\label{fig:bm_nodes}
-\end{figure}
-
-\begin{figure}[ht]
-\centering
-\includegraphics[width=8cm,height=5cm]{benchmarkpaths}
-\caption{Plot of runtime against shortest path sample size. It can be seen that runtime increases with higher size sample.}
-\label{fig:bm_paths}
-\end{figure}
 
 
 \subsection*{Approximate Betweenness Centrality Retains Detection Power of Inter-Genomic Repeats}
@@ -248,6 +233,10 @@ Decreasing the betweenness centrality cutoff requirement results in a trade-off 
 Instead of using the default cutoff of $3\sigma$ suggested by Bambus2, we mark all the nodes with centrality more than $Q_{3} + 1.5*IQR$ as an inter-genomic repeats.
 In the 10-genome assembly graph, the sensitivity increases from 5.8\% to 34.4\% when using the \textsc{iqr} cutoff method.
 Conversely, the specificity and and precision drops from 99.3\% to 90.9\% and 25\% to 12.5\%, respectively.
+
+
+\subsection*{Results On Real Metagenomic Datasets}
+We evaluated the runtime of Bambus2's repeat detection module on metagonic stool sample. It
 
 
 \section{Discussion}
