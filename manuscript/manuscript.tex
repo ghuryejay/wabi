@@ -149,7 +149,7 @@ The first step is to construct the \textit{de Bruijn} graph from the set of refe
 De Bruijn strings are a type of ``comprehensive'' strings. For a given alphabet $\Sigma = \{A,C,T,G\}$ and a length $k$, a de Bruijn string of order $k$ contains as substrings of length $k$ over $\Sigma$. These strings can be represented in a sophisticated way in term of a graph called de Bruijn graph \cite{debruijn}. A de Bruijn graph of order $k$ is a graph that contains all strings of length $k-1$ from a given alphabets as nodes and contains edges between two nodes if the corresponding strings overlap by exactly $k-2$ letters in prefix-suffix manner. In other words, each $k$-mer is represented by two nodes in a graph connected by an edge. 
 
 Next we modify the de Bruijn graph generated from genomes to identify repeats. We define \textit{unipaths} as the path of nodes in which the outdegree of first node on the path is $1$ and indegree is not equal to $1$, indegree of last node on the path is $1$ and outdegree is not equal to $1$ and for all other nodes along the path, both indegree and out degree is exactly $1$. We compress all the unipaths in a graph to represent the path in a compact way. We represent the unipath as a single node whose label is the concatenation of all node labels along the path.
-Nodes in the resulting graph represent uniquely resolvable sequences of length $>= k$.
+Nodes in the resulting graph represent uniquely resolvable sequences of length $\geq k$.
 
 For evaluation we simulate metagenomic assembly graphs consisting of two, five, and ten bacterial genomes.
 The composition of each simulated sample is described in Table \ref{tab:composition}.
