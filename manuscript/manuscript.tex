@@ -109,7 +109,7 @@ where $\delta_{s}(v) = \frac{\sigma_{st}(v)}{\sigma_{st}}$ and $succ(v)$ is an i
 This algorithm takes time $\Theta(mn)$ for unit edge weight graphs and $\Theta(mn + n^{2}log(n))$ for weighted graphs. This algorithm does not scale well with large networks with millions of nodes and edges. Bader and Madduri\cite{bader} provide a massively parallel implementation of the exact algorithm. However this approach scales to about a few million nodes and may not be fast enough for larger assembly graphs. 
 
 \subsection*{Betweenness Centrality Based on Sampling Nodes}
-Due to scalability limitations of exact betweenness centrality, several approximation algorithms for betweenness centrality have been proposed. Bader and Pich\cite{bp} provide an approximation algorithm by choosing a subset of $k$ starting nodes called pivots and using same aggregation strategy as exact betweeness centrality algorithm. However, this algorithm overestimates the centrality of some unimportant nodes which are nearer to pivots. The approximation algorithm proposed by Geisberger et al. \cite{sanders} overcomes this drawback by changing the scheme for aggregating betweenness contributions so that nodes nearer to pivots are not unduly profited. The algorithm starts with the sample of $k$ nodes from $|V| = n$ nodes in graph. In each iteration, it chooses one of $2n$ shortest path at random. Here there are $2n$ sample shortest paths because algorithm can do forward search from $s \in V$ or backward search from $t \in V$ and each $s$ and $t$ can have $n$ values. Let $\delta_{P}(v)$ be the contribution received by node $v$ due to shortest path $P$. It can be shown that \cite{sanders} due to all shortest paths $P$ on which $v$ lies, $v$ receives contribution 
+Due to scalability limitations of exact betweenness centrality, several approximation algorithms for betweenness centrality have been proposed. Bader and Pich\cite{bp} provide an approximation algorithm by choosing a subset of $k$ starting nodes called pivots and using same aggregation strategy as Brandes algorithm. However, this algorithm overestimates the centrality of some unimportant nodes which are nearer to pivots. The approximation algorithm proposed by Geisberger et al. \cite{sanders} overcomes this drawback by changing the scheme for aggregating betweenness contributions so that nodes nearer to pivots are not unduly profited. The algorithm starts with the sample of $k$ nodes from $|V| = n$ nodes in graph. In each iteration, it chooses one of $2n$ shortest path at random. Here there are $2n$ sample shortest paths because algorithm can do forward search from $s \in V$ or backward search from $t \in V$ and each $s$ and $t$ can have $n$ values. Let $\delta_{P}(v)$ be the contribution received by node $v$ due to shortest path $P$. It can be shown that \cite{sanders} due to all shortest paths $P$ on which $v$ lies, $v$ receives contribution 
 
 $$\delta(v) := \delta_{s}(v) := \sum_{t \in V}\sum \{\delta_{P}(v):  P \in SP_{st}(v)\}$$
 due to a forward search, and 
@@ -134,9 +134,9 @@ Another approximation algorithm was proposed by Matteo et al. \cite{matteo} base
 \begin{equation} \label{sample_size_algo}
 r = \frac{c}{\epsilon^{2}}(\left\lfloor{log_{2}(VD(G) - 2)}\right\rfloor + 1 + ln\frac{1}{\delta})
 \end{equation} 
-where $c$ is a constant with value $0.5$. It is guaranteed that betweenness centralities estimated using this sample size are within additive factor $\epsilon$ from real values with probability atleast $1-\delta$. 
+where $c$ is a constant with value $0.5$. 
 
-The algorithm estimates the vertex diameter of the graph using a simple $2-$approximation algorithm. The shortest paths are sampled using weighted random sampling. The runtime of this algorithm is dominated by the computation of shortest path at each step which takes time $O(|V| + |E|)$ if graph is unweighted (BFS) and $O(|E| + |V|log|V|)$ otherwise (Dijkstra's algorithm). This is multiplied by $r$ for $r$ iterations to obtain final complexity.
+The algorithm estimates the vertex diameter of the graph using a simple $2-$approximation algorithm. The shortest paths are sampled using weighted random sampling. The runtime of this algorithm is dominated by the computation of shortest path at each step which takes time $O(|V| + |E|)$ for unweighted graphs(BFS) and $O(|E| + |V|log|V|)$ otherwise (Dijkstra's algorithm). This is multiplied by $r$ for $r$ iterations to obtain final complexity.
 
 
 \section{Methods}
@@ -177,9 +177,9 @@ A $k$-mer size of 55 was chosen for initial creation of the de Bruijn graph.
 \label{tab:composition}
 \end{table}
 
-Apart from simulated metagenomic graphs, we study how approximation algorithms for betweenness centrality work on real datasets. We evaluated the runtime  of these algorithms on metagenomic stool sample of a premature infant. This graph has 3797425 nodes and 2970379 edges. We compared the performance of Bambus2's repeat detection module on this data with the performance of approximate betweenness centrality algorithms. 
+Apart from simulated metagenomic graphs, we study how approximation algorithms for betweenness centrality work on real datasets. We evaluated the runtime  of these algorithms on metagenomic stool sample of a premature infant\cite{morowitz2011strain}. This graph has 3797425 nodes and 2970379 edges. We compared the performance of Bambus2's repeat detection module on this data with the performance of approximate betweenness centrality algorithms. 
 
-\subsection*{\textsc{NetworKit}}
+\subsection*{Implementation}
 We investigate the performance of approximate betweenness centrality algorithms on the metagenomic graphs to find inter-genome repeats. We used the implementations provided by \textsc{NetworKit}\cite{networkit} library. \textsc{NetworKit} is an open source library for high-performance network analysis. It implements effecient graph algorithms and parallelize most of them. It provides implementation for variety of centrality measures. We used the implementation of approximate betweenness centrality. For our experiments, we use the parallelized implementation for the algorithm by Matteo et al.\cite{matteo} and serial implementation for the algorithm by Geisberger et al.\cite{sanders}.
 
 
