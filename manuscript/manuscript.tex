@@ -264,9 +264,9 @@ The advantage of using the node sampling algorithm is that it appears to scale l
 Thus, if runtime is a concern, small increasing subsets of nodes can be sampled and the runtime of a larger sample can be extrapolated.
 We can pair this information with how the subset of nodes marked as inter-genomic repeats changes as we increase the sample size.
 If the same set of nodes are being marked as inter-genomic repeats, then the algorithm can be terminated before sampling a larger set of nodes.
-Conversely, if there is high variability between nodes marked as repeats in subsequent samplings, then a larger set of nodes should be sampled.
+Conversely, if there is high variability between nodes marked as repeats in subsequent samplings, then a larger set of nodes should be sampled until the results stabilize.
 This is the main advantage of the shortest path sampling approach.
-While the shortest path sampling approach takes a fair bit longer in our approach then small node sample sizes, it has a probabilistic guarantee associated with the betweenness centrality computation.
+While the shortest path sampling approach takes a fair bit longer in our evaluation then sampling a small number of nodes, it has a probabilistic guarantee associated with the betweenness centrality computation.
 
 In the future, larger and more complex metagenomic assembly graphs must be used to further evaluate the efficacy of the approximation algorithms.
 
