@@ -180,7 +180,7 @@ A $k$-mer size of 55 was chosen for initial creation of the de Bruijn graph.
 In addition to the simulated metagenomic assembly graphs, we study how approximation algorithms for betweenness centrality perform on real datasets. We evaluated the runtime  of these algorithms on a metagenomic stool sample of a premature infant\cite{morowitz2011strain}. This graph has 3,797,425 nodes and 2,970,379 edges. We compared the runtime of Bambus2's repeat detection module on this data with the runtime of approximate betweenness centrality algorithms.  
 
 \subsection*{Evaluation}
-We evaluate the effect of using approximation algorithms for betweenness centrality on finding inter-genome repeats using the simulated datasets described above.
+%We evaluate the effect of using approximation algorithms for betweenness centrality on finding inter-genome repeats using the simulated datasets described above.
 %We use the notion of Sensitivity, specificity, and precision to define the quality of repeat detection.
 A good repeat detection strategy should have high sensitivity, specificity, and precision. Sensitivity is the measure of proportion of actual repeats which are correctly identified by the algorithm. Specificity is the proportion of non-repeats correctly identified by the algorithm. Precision is the proportion of repeats identified that are correct. High sensitivity is desired because we want to remove as many repeats from the graph. High specificity is desired because we do not want to remove non-repeats which are incorrectly identified as repeats by algorithm. High precision helps us determine the usefulness of our methods. To calculate sensitivity, specificity, and precision, we define following terms:
 \begin{itemize}
@@ -195,8 +195,9 @@ Using these quantities, we can define sensitivity and specificity as follows:
  $$Specificity = \frac{TN}{TN+FP}$$
  $$Precision = \frac{TP}{TP + FP}$$
 
-For evaluating the effect of node sampling on inter-genomic repeat detection, we sample between 10 to 10,000 nodes per trial.
-For evaluating path sampling, we select epsilon parameters between 0.01 and 0.20.
+We evaluate the two approaches for calculating betweenness centrality based on sampling nodes and sampling shortest paths using the above measures.
+For evaluating the effect of sampling nodes on inter-genomic repeat detection, we sample between 10 to 10,000 nodes per trial.
+For evaluating shortest paths sampling, we select epsilon parameters between 0.01 and 0.20.
 The result of each parameter is averaged over 10 trials.
 
 
@@ -206,8 +207,9 @@ Bambus2\cite{bambus} uses exact betweenness centrality to find repeats. To filte
 Another cutoff criteria we test is based on \textit{interquartile range(IQR)}. Let $Q_{1}$,$Q_{2}$, and $Q_{3}$ denote the lower, middle and upper quartiles respectively. IQR can be defined as the difference between the upper and lower quartile. So, $IQR = Q_{3} - Q_{1}$. For the values of centrality, we calculate upper quartile, middle quartile, lower quartile and IQR. For filtering, we mark all the nodes with centrality more than $Q_{3} + 1.5*IQR$ as repeats. The advantage of this method is that it does not make any assumptions about the distribution of underlying data. 
 
 \subsection*{Implementation}
-We investigate the performance of approximate betweenness centrality algorithms on the metagenomic graphs to find inter-genome repeats. We carried out experiments on a 64-bit Linux machine with 12 CPUs and 50 GB memory. We used the implementations provided by \textsc{NetworKit}\cite{networkit} library. It implements effecient graph algorithms and parallelize most of them. It provides implementation for variety of centrality measures. We used the implementation of approximate betweenness centrality. For our experiments, we use the parallelized implementation for the algorithm by Matteo et al.\cite{matteo} and serial implementation for the algorithm by Geisberger et al.\cite{sanders}.
-
+We investigate the performance of approximate betweenness centrality algorithms on the metagenomic assembly graphs using the implementations provided by \textsc{NetworKit}\cite{networkit} library. \textsc{NetworKit} contains efficient and parallel implementations of a collection of graph algorithms.
+It provides implementations for various centrality measures, but here we only use the implementations related to betweenness centrality. For our experiments, we use the parallelized implementation for the algorithm by Matteo et al.\cite{matteo} and serial implementation for the algorithm by Geisberger et al.\cite{sanders}.
+We carried out experiments on a 64-bit Linux machine with 12 CPUs and 50 GB memory. 
 
 \section{Results} 
 
@@ -260,7 +262,7 @@ Betweenness centrality is a proven method for finding inter-genomic repeats in m
 The size of typical metagenomic assembly graphs often make it infeasible to calculate the exact betweenness centrality of each node.
 We have taken the first steps to show how recent approximation algorithms for calculating betweenness centrality can be used retain the same repeat detection power as the exact algorithms in a fraction of the time.
 
-The advantage of using the node sampling algorithm is that it appears to scale linearly in practice.
+The advantage of calculating betweenness centrality using node sampling is that it appears to scale linearly in practice.
 Thus, if runtime is a concern, small increasing subsets of nodes can be sampled and the runtime of a larger sample can be extrapolated.
 We can pair this information with how the subset of nodes marked as inter-genomic repeats changes as we increase the sample size.
 If the same set of nodes are being marked as inter-genomic repeats, then the algorithm can be terminated before sampling a larger set of nodes.
