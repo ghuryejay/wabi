@@ -82,7 +82,16 @@ Assembling metagenomic data is a challenging task due to several reasons. One of
 
 \section{Introduction}
 
-Metagenomic data are considerably more complex. The assembly of metagenomic data is complicated due to several reasons. Few of them are: (i) widely different levels of representation for different organisms in a community; (ii) genomic variation between closely related organisms; (iii) conserved genomic regions shared by distantly related organims; and (iv) repetitive sequences within individual genomes. Genomic repeats are the major challenge when assembling isolated genomes and their effect is prominently seen in metagenomic datasets. It has been shown that the number of reconstructions grow exponentially with the number of repeats\cite{kingsford}. Therefore it is computationally infeasible to find one correct solution for assembly.  To tackle this problem, several assemblers have used the notion of network centrality to find repeats. For example, Bambus2\cite{bambus} uses betweenness centrality to find central nodes in graphs. The drawback of their approach is that they calculate exact betweenness centrality by computing all pair shortest paths. This approach is very slow when applied to large assembly graphs. To overcome this drawback, we explore how can we apply approximate betweenness centrality to assembly graphs and find inter-genomic repeats accurately. The reason for using approximation algorithms is that they scale well as the size of graphs increase. We also investigate how parallelized implementation of these algorithms provide speedups in detecting repeats. 
+The assembly of metagenomics data, the sequences of DNA recovered from an environment without culturing, is considerably more complex than that of individual genomes.
+%Challenges include: (i) repetitive sequences within individual genomes; (ii) varying abundances of different organisms in the community; (iii) variation between closely related organisms; and (iv) conserved genomic segments shared by distantly related organisms.
+Repetitive sequences pose a major challenge when assembling isolated genomes.
+It has been shown that the number of reconstructions grow exponentially with the number of repeats making it computationally infeasible to find one correct solution for assembly\cite{kingsford}.
+The effect of repeats on assembly is exacerbated in metagenomic data sets due to the presence of conserved regions of the genome linking together distantly related organisms.
+To tackle the problem of identifying these inter-genomic repeats, several assemblers have used the notion of network centrality to find repeats within the assembly graph.
+For example, Bambus2\cite{bambus} uses betweenness centrality to find \emph{central} nodes in the graph.
+The drawback of their approach is the expensive calculation of betweenness centrality by computing all-pair shortest paths.
+This computation is impractical when applied to the large assembly graphs typically encountered.
+To overcome this drawback, we explore the application of approximate and parallel betweenness centrality algorithms on metagenomic assembly graphs and evaluate their effectiveness in identifying inter-genomic repeats.
 
 \section{Related Work}
 
@@ -115,7 +124,7 @@ This algorithm is efficiently implemented by modifying original aggregation sche
 \begin{figure*}[htbp]
 \centering
 \includegraphics[width=\textwidth]{es_mix_200kb_k21.png}
-\caption{Assembly graph of a simulated community consisting of 200 Kbp subsets of \textit{Escherichia coli} str. K-12 MG1655 and \textit{Staphylococcus aureus}.  Nodes are colored and sized based on their relative betweenness centrality. The highlighted nodes are inter-genomic repeats whose deletion would separate the graph.}
+\caption{Assembly graph of a simulated community consisting of 200 Kbp subsets of \textit{Escherichia coli} str. K-12 MG1655 and \textit{Staphylococcus aureus}.  Nodes are colored and sized based on their relative betweenness centrality. The highlighted nodes are inter-genomic repeats whose deletion would separate the graph. Note that the betweenness centrality measure correctly identifies these nodes.}
 \label{fig:sampled_nodes}
 \end{figure*}
 
@@ -177,7 +186,7 @@ We investigate the performance of approximate betweenness centrality algorithms 
 \subsection*{Cutoff Criteria For Repeats}
 Bambus2\cite{bambus} uses exact betweenness centrality to find repeats. To filter out repeats, it calculates mean $\mu$ and standard deviation $\sigma$ over the centrality scores for all the nodes in graph. It then marks all the nodes with centrality score greater than $\mu + 3*\sigma$ as repeats. To filter out repeats based on approximate centrality scores, we use the same method as Bambus2. 
 
-Another cutoff criteria we test is based on \textit{interquartile range(IQR)}. Let $Q_{1}$,$Q_{2}$, and $Q_{3}$ denote lower, middle and upper quartile respectiely. IQR can be defined as the difference between the upper and lower quartile. So, $IQR = Q_{3} - Q_{1}$. For the values of centrality, we calculate upper quartile, middle quartile, lower quartile and IQR. For filtering, we mark all the nodes with centrality more than $Q_{3} + 1.5*IQR$ as repeats. The advantage of this method is that it does not make any assumptions about the distribution of underlying data.  
+Another cutoff criteria we test is based on \textit{interquartile range(IQR)}. Let $Q_{1}$,$Q_{2}$, and $Q_{3}$ denote the lower, middle and upper quartiles respectively. IQR can be defined as the difference between the upper and lower quartile. So, $IQR = Q_{3} - Q_{1}$. For the values of centrality, we calculate upper quartile, middle quartile, lower quartile and IQR. For filtering, we mark all the nodes with centrality more than $Q_{3} + 1.5*IQR$ as repeats. The advantage of this method is that it does not make any assumptions about the distribution of underlying data.  
 
 \section{Results} 
 We evaluate the effect of using approximation algorithms for betweenness centrality on finding inter-genome repeats using the simulated datasets described above.
@@ -231,7 +240,7 @@ For the 10-genome sample, the statistical measures and runtime are equivalent to
 
 Decreasing the betweenness centrality cutoff requirement results in a trade-off between the different statistical measures.
 Instead of using the default cutoff of $3\sigma$ suggested by Bambus2, we mark all the nodes with centrality more than $Q_{3} + 1.5*IQR$ as an inter-genomic repeats.
-In the 10-genome assembly graph, the sensitivity increases from 5.8\% to 34.4\% when using the \textsc{iqr} cutoff method.
+In the 10-genome assembly graph, the sensitivity increases from 5.8\% to 34.4\% when using the IQR cutoff method.
 Conversely, the specificity and and precision drops from 99.3\% to 90.9\% and 25\% to 12.5\%, respectively.
 
 
