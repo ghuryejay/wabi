@@ -73,52 +73,44 @@
 \tocauthor{Authors' Instructions}
 \maketitle
 
+
 \begin{abstract}
-Assembling genomic data is challenging due in large part to the presence of repetitive regions.
-This issue is compounded in metagenomic datasets due to uneven coverages and the presence of conserved genomic regions found in distantly related organisms.
-Centrality has been proposed as a solution to the problem of identify inter-genomic repeats, but the original algorithms used are inefficient.
-Here we explore the use of approximate centrality measures and show that repeats can be accurately and efficiently detected.
+Genomic repeats are the most important challenge in genomic assembly. While for single genomes the effect of repeats is largely addressed by modern long-read sequencing technologies, in metagenomic data intra-genome and, more importantly, inter-genome repeats continue to be a significant impediment to effective genome reconstruction.  Detecting repeats in metagenomic samples is complicated by characteristic features of these data, primarily uneven depths of coverage and the presence of genomic polymorphisms.  The scaffolder Bambus 2 introduced a new strategy for repeat detection based on the betweenness centrality measure -- a concept originally used in social network analysis. The exact computation of the betweenness centrality measure is, however, computationally intensive and impractical in large metagenomic datasets.  Here we explore the effectiveness of approximate algorithms for network centrality to accurately detect genomic repeats within metagenomic samples.  We show that approximate measures of centrality achieve much higher computational efficiencies with a minimal loss in the accuracy of detecting repeats in metagenomic data.  
 \keywords{Metagenomics, Algorithms, Centrality, Graph}
 \end{abstract}
 
 
 \section{Introduction}
 
-The assembly of metagenomics data, the sequences of DNA recovered from an environment without culturing, is considerably more complex than that of individual genomes.
-%Challenges include: (i) repetitive sequences within individual genomes; (ii) varying abundances of different organisms in the community; (iii) variation between closely related organisms; and (iv) conserved genomic segments shared by distantly related organisms.
-Repetitive sequences pose a major challenge when assembling isolated genomes.
-It has been shown that the number of reconstructions grow exponentially with the number of repeats making it computationally infeasible to find one correct solution for assembly\cite{kingsford}.
-The effect of repeats on assembly is exacerbated in metagenomic datasets due to the presence of conserved regions of the genome linking together distantly related organisms.
-To tackle the problem of identifying these inter-genomic repeats, several assemblers have used the notion of network centrality to find repeats within the assembly graph (Fig. \ref{fig:es_mix}).
-For example, Bambus2\cite{bambus} uses betweenness centrality to find \emph{central} nodes in the graph.
-The drawback of their approach is the expensive calculation of betweenness centrality by computing all-pair shortest paths.
-This computation is impractical when applied to the large assembly graphs typically encountered.
-To overcome this drawback, we explore the application of approximate and parallel betweenness centrality algorithms on metagenomic assembly graphs and evaluate their effectiveness in identifying inter-genomic repeats.
+Genomic repeats are the most important challenge in genomic assembly even for isolate genomes.  When reads are shorter than the repeats (a common situation until the recent development of long read sequencing technologies) it can be shown that the number of genome reconstructions consistent with the read data grows exponentially with the number of repeats~\cite{kingsford}.  The use of additional information to constrain the one genome reconstruction representing the actual genome being assembled leads to computationally intractable problems. In other words, when reads are shorter than repeats the correct and complete reconstruction of a genome is impossible.  In the case of isolate genomes, long read technologies have largely addressed this challenge, at least for bacteria where the majority of genomic repeats fall within the range of achievable read lengths~\cite{koren2015one}.  In metagenomics, however, the problem is compounded by the fact that microbial mixtures often include multiple closely-related genomes differing in just a few locations.  The genomic segments shared by closely related organisms -- inter-genomic repeats -- are substantially larger than intra-genomic repeats and cannot be fully resolved even if long read data were available. Instead, the best hope is to identify and flag these repeats  in order to avoid mis-assemblies that incorrectly span across genomes. 
+
+Repeat detection strategies have been employed in genome assembly from the early days of the field, and numerous approaches have been developed for this purpose.  In metagenomics, however, the problem is exacerbated by uneven coverage across contigs and by the fact that both inter- and intra-genomic repeats exist in the data, factors impacting statistical approaches for repeat detection.  An alternate approach based on the social network concept of betweenness centrality was introduced in Bambus 2~\cite{bambus}. An example of the effectiveness of this approach in a simple community composed of two genomes is shown in Fig.~\ref{fig:es_mix}.   The full implementation of betweenness centrality requires an all-pairs shortest path computation which is computationally too intensive for typical metagtenomic datasets.  In Bambus 2, for example, repeat finding in a typical stool sample requires days of computation.
+To overcome this limitation, we explore the use of parallel and approximate betweenness centrality algorithms for repeat detection in metagenomic assembly graphs, and the effect of the level of approximation on the efficiency and accuracy of these algorithms.  
 
 \begin{figure*}[htbp]
 \centering
 \includegraphics[width=0.70\textwidth]{es_mix_200kb_k21.png}
-\caption{Assembly graph of a simulated community consisting of 200 Kbp subsets of \textit{Escherichia coli} str. K-12 MG1655 and \textit{Staphylococcus aureus}.  Nodes are colored and sized based on their relative betweenness centrality. The highlighted nodes are inter-genomic repeats whose deletion would separate the graph. Note that the betweenness centrality measure correctly identifies these nodes.}
+\caption{Assembly graph of a simulated community consisting of 200 Kbp subsets of \textit{Escherichia coli} str. K-12 MG1655 and \textit{Staphylococcus aureus}.  Nodes are colored and sized based on their relative betweenness centrality with larger, green nodes indicating a higher centrality. The highlighted nodes are inter-genomic repeats whose deletion would separate the graph. Note that the betweenness centrality measure correctly identifies these nodes.}
 \label{fig:es_mix}
 \end{figure*}
 
 \section{Related Work}
 
 \subsection*{Betweenness Centrality}
-In network analysis, metrics of centrality are used to identify the most important nodes within a graph. Several metrics to measure centrality have been proposed, but in this work, we use betweenness centrality. The betweenness centrality of a particular node is equal to the number of shortest paths from all nodes to all others that pass through that node. Formally, for a node $v$, it is defined by following expression:
+In network analysis, metrics of centrality are used to identify the most important nodes within a graph. Several metrics to measure centrality have been proposed, but in this work, we use betweenness centrality. The betweenness centrality of a particular node is equal to the number of shortest paths from all nodes to all others that pass through that node. Intuitively, a node that is frequently found on paths connecting other nodes is ``important''.  In assembly, we can likewise infer that nodes that are on the paths connecting multiple distinct segments of a genomic assembly likely represent repetitive sequences.  Formally, for a node $v$, centrality is defined by following expression:
 
 $$g(v) = \sum_{s \neq t \neq v} \frac{\sigma_{st}(v)}{\sigma_{st}}$$
 
 where $\sigma_{st}$ is the total number of shortest paths from node $s$ to node $t$ and $\sigma_{st}(v)$ is the number of those paths passing through $v$.
 
-Brandes\cite{brandes} gives an exact algorithm for computing betweenness centrality of all the nodes that is based on solving a single-source shortest path (SSSP) problem for each node. A SSSP computation from $s$ produces a directed acyclic graph (DAG) encoding all shortest paths starting at $s$. The contributions of these paths to the betweenness counters can be computed in linear time using backward aggregation. Brandes algorithm calculates $\sigma_{st}$  simultaneously with shortest path calculations: $\sigma_{ss} = 1$ and for $s \neq t, \sigma_{st} = \sum_{v \in pred(t)} \sigma_{sv}$ where $pred(t)$ is a collection of the immediate predecessors of  $t$ on every shortes path ending at $t$. In a subsequent aggregation phase, nodes are processed by non-decreasing distance from $s$. So we have: 
+Brandes\cite{brandes} gives an exact algorithm for computing betweenness centrality of all the nodes that is based on solving a single-source shortest path (SSSP) problem for each node. A SSSP computation from $s$ produces a directed acyclic graph (DAG) encoding all shortest paths starting at $s$. The contributions of these paths to the betweenness counters can be computed in linear time using backward aggregation. Brandes' algorithm calculates $\sigma_{st}$  simultaneously with the shortest path calculations: $\sigma_{ss} = 1$ and for $s \neq t, \sigma_{st} = \sum_{v \in pred(t)} \sigma_{sv}$ where $pred(t)$ is a collection of the immediate predecessors of  $t$ on every shortes path ending at $t$. In a subsequent aggregation phase, nodes are processed by non-decreasing distance from $s$. So we have: 
 $$\delta_{s}(v) = \sum_{w \in succ(v)} \frac{\sigma_{sv}}{\sigma_{sw}}(1+\delta_{s}(w))$$
 
 where $\delta_{s}(v) = \frac{\sigma_{st}(v)}{\sigma_{st}}$ and $succ(v)$ is an immediate successor of $v$  in the shortest path DAG.   
-This algorithm takes time $\Theta(mn)$ for unit edge weight graphs and $\Theta(mn + n^{2}log(n))$ for weighted graphs. This algorithm does not scale well with large networks with millions of nodes and edges. Bader and Madduri\cite{bader} provide a massively parallel implementation of the exact algorithm, but scales in practice to only a few million nodes, limiting its application to larger metagenomic assembly graphs that exceed million of nodes.
+This algorithm takes time $\Theta(mn)$ for unit edge weight graphs and $\Theta(mn + n^{2}log(n))$ for weighted graphs. This algorithm does not scale well in large networks with millions of nodes and edges. Bader and Madduri\cite{bader} provide a massively parallel implementation of the exact algorithm, but even the parallel implementation only scales in practice to  a few million nodes, limiting its application to larger metagenomic assembly graphs.
 
-\subsection*{Betweenness Centrality Based on Sampling Nodes}
-Due to scalability limitations of exact betweenness centrality, several approximation algorithms for betweenness centrality have been proposed. Bader and Pich\cite{bp} provide an approximation algorithm by choosing a subset of $k$ starting nodes called pivots and using same aggregation strategy as Brandes algorithm. However, this algorithm overestimates the centrality of some unimportant nodes which are nearer to pivots. The approximation algorithm proposed by Geisberger et al. \cite{sanders} overcomes this drawback by changing the scheme for aggregating betweenness contributions so that nodes nearer to pivots are not unduly profited. The algorithm starts with the sample of $k$ nodes from $|V| = n$ nodes in graph. In each iteration, it chooses one of $2n$ shortest path at random. Here there are $2n$ sample shortest paths because algorithm can do forward search from $s \in V$ or backward search from $t \in V$ and each $s$ and $t$ can have $n$ values. Let $\delta_{P}(v)$ be the contribution received by node $v$ due to shortest path $P$. It can be shown that \cite{sanders} due to all shortest paths $P$ on which $v$ lies, $v$ receives contribution 
+\subsection*{Approximate Betweenness Centrality Based on Node Sampling}
+Due to scalability limitations of exact betweenness centrality, several approximation algorithms for betweenness centrality have been proposed. Bader and Pich\cite{bp} provide an approximation algorithm by choosing a subset of $k$ starting nodes called pivots and apply the Brandes algorithm to just the chosen nodes. This algorithm was shown to overestimate the centrality of some unimportant nodes which are close to the pivots. Geisberger et al. \cite{sanders} sole this issue by changing the scheme for aggregating betweenness contributions so that nodes close to the pivots are not unduly profited. The algorithm starts with the sample of $k$ nodes from $|V| = n$ nodes in graph. In each iteration, it chooses one of $2n$ shortest path at random. Here there are $2n$ sample shortest paths because the algorithm can perform a forward search from $s \in V$ or a backward search from $t \in V$ and each $s$ and $t$ can have $n$ values. Let $\delta_{P}(v)$ be the contribution received by node $v$ due to shortest path $P$. It can be shown that \cite{sanders} due to all shortest paths $P$ on which $v$ lies, $v$ receives contribution 
 
 $$\delta(v) := \delta_{s}(v) := \sum_{t \in V}\sum \{\delta_{P}(v):  P \in SP_{st}(v)\}$$
 due to a forward search, and 
@@ -126,35 +118,31 @@ due to a forward search, and
 $$\delta(v) := \delta_{t}(v) := \sum_{s \in V}\sum \{\delta_{P}(v):  P \in SP_{st}(v)\}$$
 due to a backward search. 
 
-This algorithm is efficiently implemented by modifying original aggregation scheme of Brandes algorithm so that the nodes near the sampled node will not receive high centrality score. Runtime of the algorithm largely depends on the size of the sample we choose. However,there is a tradeoff between size of sample and accuracy of centrality detection.  
+The runtime and accuracy of these algorithms depend on the number of nodes sampled from the graph.
 
-
-\subsection*{Betweenness Centrality Based on Sampling Shortest Paths}
-Another approximation algorithm was proposed by Matteo et al. \cite{matteo} based on randomized sampling of shortest paths and offer probabilistic guarantees on the quality of approximation. This algorithm guarantees that all approximate values of betweenness for all vertices are within an additive factor $\epsilon \in (0,1)$ from the real values with probability at least $1-\delta$. To derive bounds on sample size, results from VC dimension theory\cite{vc} are used. The main advantage of this algorithm is that the sample size does not depend on the size of the graph, but only on the maximum number vertices in a shortest path which is called \textit{vertex diameter}. The sample size $r$ of shortest paths is found out with the help of $VD(G)$ as follows:
+\subsection*{Approximate Betweenness Centrality Based on Sampling Shortest Paths}
+A different approximation strategy was proposed by Matteo et al. \cite{matteo} based on randomized sampling of shortest paths (rather than nodes), approach which offers probabilistic guarantees on the quality of approximation. This algorithm guarantees that all approximate values of betweenness for all vertices are within an additive factor $\epsilon \in (0,1)$ from the real values with probability at least $1-\delta$. To derive bounds on sample size, results from VC dimension theory\cite{vc} are used. The main advantage of this algorithm is that the sample size does not depend on the size of the graph, but only on the maximum number vertices in a shortest path, measure called the \textit{vertex diameter} of the graph. The sample size $r$ of shortest paths is found out with the help of $VD(G)$ as follows:
 $$
 r = \frac{c}{\epsilon^{2}}(\left\lfloor{log_{2}(VD(G) - 2)}\right\rfloor + 1 + ln\frac{1}{\delta})
 $$ 
 where $c$ is a constant with value $0.5$. 
 
-The algorithm estimates the vertex diameter of the graph using a simple $2-$approximation algorithm. The shortest paths are sampled using weighted random sampling. The runtime of this algorithm is dominated by the computation of shortest path at each step which takes time $O(|V| + |E|)$ for unweighted graphs (BFS) and $O(|E| + |V|log|V|)$ otherwise (Dijkstra's algorithm). This is multiplied by $r$ for $r$ iterations to obtain final complexity.
+The algorithm estimates the vertex diameter of the graph using a simple $2-$approximation algorithm. The shortest paths are sampled using weighted random sampling. The runtime of this algorithm is dominated by the computation of shortest path at each step which takes time $O(|V| + |E|)$ for unweighted graphs (BFS) and $O(|E| + |V|log|V|)$ otherwise (Dijkstra's algorithm). This value is multiplied by the number of iterations to obtain the final complexity.
 
 
 \section{Methods}
 
 
-\subsection*{Simulating Metagenomic Assembly Repeat Graphs}
+\subsection*{Metagenomic Data}
 
 We evaluate the efficacy of detecting inter-genomic repeats using the approximate betweenness centrality methods on simulated metagenomic assembly graphs.
-The first step is to construct the \textit{de Bruijn} graph from the set of reference genomes.
-De Bruijn strings are a type of ``comprehensive'' strings. For a given alphabet $\Sigma = \{A,C,T,G\}$ and a length $k$, a de Bruijn string of order $k$ contains as substrings of length $k$ over $\Sigma$. These strings can be represented in a sophisticated way in term of a graph called de Bruijn graph \cite{debruijn}. A de Bruijn graph of order $k$ is a directed graph that contains all strings of length $k-1$ from a given alphabets as nodes and contains edges between two nodes if the corresponding strings overlap by exactly $k-2$ letters in prefix-suffix manner. In other words, each $k$-mer is represented by two nodes in a graph connected by an edge. 
+We start with a collection of genomes from which we construct idealized De Bruijn graphs (assuming perfect coverage and no sequencing errors). Next we modify the De Bruijn graph generated from the collection of genomes to identify repeats $>=k$. We define \textit{unipaths} as maximal paths comprising nodes with in- and out-degrees equal to $1$. We compress all the unipaths into single nodes representing the concatenated labels of the collapsed nodes. 
+The nodes in the resulting graph represent uniquely resolvable sequences of length $\geq k$.
 
-Next we modify the de Bruijn graph generated from the collection of genomes to identify repeats $>=k$. We define \textit{unipaths} as the path of nodes in which the outdegree of first node on the path is $1$ and indegree is not equal to $1$, indegree of last node on the path is $1$ and outdegree is not equal to $1$ and for all other nodes along the path, both indegree and out degree is exactly $1$. We compress all the unipaths in a graph to represent the path in a compact way. We represent the unipath as a single node whose label is the concatenation of all node labels along the path.
-Nodes in the resulting graph represent uniquely resolvable sequences of length $\geq k$.
-
-For evaluation we simulate metagenomic assembly graphs consisting of two, five, and ten bacterial genomes.
+We simulated metagenomic assembly graphs consisting of two, five, and ten bacterial genomes.
 The composition of each simulated sample is described in Table \ref{tab:composition}.
 For the five and ten metagenome samples, random bacterial genomes were chosen from the data set provided by \cite{shakya2013comparative}.
-A $k$-mer size of 55 was chosen for initial creation of the de Bruijn graph.
+A $k$-mer size of 55 was chosen for the initial creation of the De Bruijn graph.
 
 \begin{table}[h]
 \centering
@@ -177,7 +165,7 @@ A $k$-mer size of 55 was chosen for initial creation of the de Bruijn graph.
 \label{tab:composition}
 \end{table}
 
-In addition to the simulated metagenomic assembly graphs, we evaluate the runtimes of the two approximation algorithms for betweenness centrality on a metagenomic stool sample of a premature infant\cite{morowitz2011strain}. This graph has 3,797,425 nodes and 2,970,379 edges. We compared the runtime of Bambus2's repeat detection module on this data with the runtime of approximate betweenness centrality algorithms.  
+In addition to the simulated metagenomic assembly graphs, we evaluate the runtimes of the two approximation algorithms for betweenness centrality on a human stool metagenomic sample. This graph has 3,797,425 nodes and 2,970,379 edges. We compared the runtime of Bambus2's repeat detection module on this data with the runtime of approximate betweenness centrality algorithms.  
 
 \subsection*{Evaluation}
 %We evaluate the effect of using approximation algorithms for betweenness centrality on finding inter-genome repeats using the simulated datasets described above.
@@ -197,36 +185,26 @@ Using these quantities, we can define sensitivity and specificity as follows:
 
 We evaluate the two approaches for calculating betweenness centrality based on sampling nodes and sampling shortest paths using the above measures.
 For evaluating the effect of sampling nodes on inter-genomic repeat detection, we sample between 10 to 10,000 nodes per trial.
-For evaluating shortest paths sampling, we select epsilon parameters between 0.01 and 0.20.
-The result of each parameter is averaged over 10 trials.
+For evaluating shortest paths sampling, we select epsilon parameters between 0.01 and 0.20, corresponding to a level of error between $1\%$ and $20\%$.
+We repeat each algorithm 10 times and report the averge results.
 
 
-\subsection*{Cutoff Criteria For Repeats}
-Bambus2\cite{bambus} uses exact betweenness centrality to find repeats. To filter out repeats, it calculates mean $\mu$ and standard deviation $\sigma$ over the centrality scores for all the nodes in graph. It then marks all the nodes with centrality score greater than $\mu + 3*\sigma$ as repeats. To filter out repeats based on approximate centrality scores, we use the same method as Bambus2. 
-
-Another cutoff criteria we test is based on \textit{interquartile range(IQR)}. Let $Q_{1}$,$Q_{2}$, and $Q_{3}$ denote the lower, middle and upper quartiles respectively. IQR can be defined as the difference between the upper and lower quartile. So, $IQR = Q_{3} - Q_{1}$. For the values of centrality, we calculate upper quartile, middle quartile, lower quartile and IQR. For filtering, we mark all the nodes with centrality more than $Q_{3} + 1.5*IQR$ as repeats. The advantage of this method is that it does not make any assumptions about the distribution of underlying data. 
+\subsection*{Cutoff Criteria For Identifying Repeats}
+Centrality algorithms provide numeric estimates for the centrality of each node, values from which we can infer whether a graph node represents a repeat. In Bambus2~\cite{bambus} repeats were defined as nodes with a centrality score larger than three standard deviations from the mean centrality of the nodes in the graph. This strategy implicitly assumes the distribution of centrality values in the graph to follow a normal distribution.  We use the same definition here and also explore the use of an alternate statistic -- the  \textit{interquartile range(IQR)}. Let $Q_{1}$,$Q_{2}$, and $Q_{3}$ denote the lower, middle and upper quartiles respectively. IQR can be defined as the difference between the upper and lower quartile. So, $IQR = Q_{3} - Q_{1}$. To identify repeats we simply mark  all the nodes with centrality values larger than $Q_{3} + 1.5*IQR$. This latter approach no longer assumes that the centrality values are normally distributed. 
 
 \subsection*{Implementation}
 We investigate the performance of approximate betweenness centrality algorithms on the metagenomic assembly graphs using the implementations provided by \textsc{NetworKit}\cite{networkit} library. \textsc{NetworKit} contains efficient and parallel implementations of a collection of graph algorithms.
-It provides implementations for various centrality measures, but here we only use the implementations related to betweenness centrality. For our experiments, we use the parallelized implementation for the algorithm by Matteo et al.\cite{matteo} and serial implementation for the algorithm by Geisberger et al.\cite{sanders}.
-We carried out experiments on a 64-bit Linux machine with 12 CPUs and 50 GB memory. 
+For our experiments, we use the parallelized implementation for the algorithm by Matteo et al.\cite{matteo} and serial implementation for the algorithm by Geisberger et al.\cite{sanders}.
+We carried out all experiments on a 64-bit Linux machine with 12 CPUs and 50 GB memory. 
 
 \section{Results} 
 
 
-\subsection*{Approximate Betweenness Centrality Retains Detection Power of Inter-Genomic Repeats}
+\subsection*{Approximate Betweenness Centrality Measures Increase Efficiency without a Significant Loss in Accuracy}
 
-Across all datasets, the more nodes and paths sampled, the better the inter-genomic repeat detection (Figs. \ref{fig:sampled_nodes} and \ref{fig:sampled_paths}).
-Furthermore, the runtime increases linearly with the number of nodes sampled (Fig. \ref{fig:sampled_nodes}).
-In the 2-genome assembly graph, all inter-genomic repeats were found by sampling as few as ten nodes, an order of magnitude less time than calculating the betweenness centrality using the full graph.
-In the 5-genome assembly graph, sampling 10 nodes has a sensitivity of 86\% and reaches 100\% at 500 nodes which is approximately one-tenth the size of the assembly graph.
-The sensitivity drops off drastically in the 10-genome assembly graph, oscillating around 6\% across all node sample sizes.
-While the specificity remains consistent across datasets (97\%-99\%), the precision increases from ~2.5\% to ~25\% when going from the 2-genome to the 10-genome data set.
+Across all datasets, the efficiency of the approach is correlated with the level of approximation for both node sampling and path sampling approaches (Figs. \ref{fig:sampled_nodes} and \ref{fig:sampled_paths}).  Accuracy is inversely proportional with the level of approximation.  The effectiveness of these methods is also higher in simpler communities.  In the 2-genome community,  all inter-genomic repeats were found by sampling as few as ten nodes, an order of magnitude less time than calculating the betweenness centrality using the full graph.  For the 5-genome graph, sampling as few as ten nodes yields a sensitivity of $86\%$ and full sensitivity is achieved with just 500 nodes, or approximately one tenth of the entire size of the assembly graph.  
 
-The statistical measures of repeat detection remain constant across the range of epsilon parameters used in the shortest path sampling approach (Fig. \ref{fig:sampled_paths}).
-Similarly, the runtime for each epsilon parameter remains relatively unchanged except for a slight change in the 10-genome sample.
-The measures and runtime of the shortest path sampling approach are equivalent to when roughly 100-500 nodes are sampled in the 10-genome sample.
-%For the 10-genome sample, the statistical measures and runtime are equivalent to when 100-500 nodes are sampled.
+The 10-genome graph is substantially more complex yielding much lower sensitivity for both node sampling and path sampling approaches.  The use of the inter-quartile range as a decision criterion improves the sensitivity from about $6\%$ to $35\%$ in the 10-genome graph at the cost of a reduction in specificity from $99.3\%$ to $90.9\%$.  Also, note that the path sampling approach is marginally more efficient than the node sampling procedure  - the worst runtime (at an error setting of $1\%$) is roughly equivalent to sampling about 1000 nodes.
 
 \begin{figure}[htbp]
 \centering
@@ -242,40 +220,18 @@ The measures and runtime of the shortest path sampling approach are equivalent t
 \label{fig:sampled_paths}
 \end{figure}
 
-\subsection*{Alternate Betweenness Centrality Cutoff Increases Sensitivity}
-
-Decreasing the betweenness centrality cutoff requirement results in a trade-off between the different statistical measures.
-We observed that for 10-genome assembly graph, the sensitivity was very less according to the cut off criteria in Bambus2. This was due to the fact that cut off was strict and was eliminating actual repeats.
-Instead of using the cut off criteria suggested by Bambus2, we mark all the nodes with centrality more than $Q_{3} + 1.5*IQR$ as an inter-genomic repeats.
-When we use this criteria on 10-genome assembly graph, the sensitivity increases from 5.8\% to 34.4\% when using the IQR cutoff method.
-Conversely, the specificity and and precision drops from 99.3\% to 90.9\% and 25\% to 12.5\%, respectively.
-We could achieve better specificity at by not losing much on sensitivity.
 
 \subsection*{Results On Real Metagenomic Datasets}
-We evaluated the performance of approximate betweenness centrality algorithms on metagenomic stool sample.
-We compared the performance of these algorithms with Bambus2's repeat detection module.
-Bambus2's repeat detection module took over 50 hours to find repeats in the assembly graph.
-The algorithm based on sampling shortest paths took 313 seconds for $\epsilon = 0.1$.
-The algorithm based on sampling nodes took 469 seconds for the sample of 1,000 nodes and approximately 1.3 hours for the 10,000 node sample. Thus, the approximation algorithms offer significant speedups for repeat finding.  
+We evaluated the performance of approximate betweenness centrality algorithms on an actual metagenomic stool sample and compared the runtime to that of the MarkRepeats procedure from Bambus 2.  On this dataset, comprising $3,797,425$ nodes and $2,970,379$ edges, Bambus 2 had not completed after 60 hours at which point we terminated the execution.  The path sampling approach with an error setting of $1\%$ ( $\epsilon = 0.1$) took $312.69$ seconds, while the node sampling approach toolk $469$ seconds for a $1,000$ node sample and 1.3 hours for a $10,000$  node sample.  
 
 
 \section{Discussion}
-Betweenness centrality is a proven method for finding inter-genomic repeats in metagenomic assemblies.
-The size of typical metagenomic assembly graphs often make it infeasible to calculate the exact betweenness centrality of each node.
-We have taken the first steps to show how recent approximation algorithms for calculating betweenness centrality can be used retain the same repeat detection power as the exact algorithms in a fraction of the time.
+Betweenness centrality is a proven method for finding inter-genomic repeats in metagenomic assemblies. The size of typical metagenomic assembly graphs often make it infeasible to calculate the exact betweenness centrality of each node, as demonstrated by the slow runtime of the MarkRepeats procedure from Bambus 2.  Here we have demonstrated the effectiveness of approximate measures of centrality able to identify repeats in a fraction of the time previously required.   We explored two alternative approximation strategies, based on node sampling and path sampling, respectively.  The runtime of node-sampling approaches can be more effectively estimated as it increases roughly linearly in the size of the sample selected.  Conversely, path sampling approaches can guarantee the level of approximation but runtime cannot be easily estimated. 
 
-The advantage of calculating betweenness centrality using node sampling is that it appears to scale linearly in practice.
-Thus, if runtime is a concern, small increasing subsets of nodes can be sampled and the runtime of a larger sample can be extrapolated.
-We can pair this information with how the subset of nodes marked as inter-genomic repeats changes as we increase the sample size.
-If the same set of nodes are being marked as inter-genomic repeats, then the algorithm can be terminated before sampling a larger set of nodes.
-Conversely, if there is high variability between nodes marked as repeats in subsequent samplings, then a larger set of nodes should be sampled until the results stabilize.
-This is the main advantage of the shortest path sampling approach.
-While the shortest path sampling approach takes a fair bit longer in our evaluation then sampling a small number of nodes, it has a probabilistic guarantee associated with the betweenness centrality computation.
-
-In the future, larger and more complex metagenomic assembly graphs must be used to further evaluate the efficacy of the approximation algorithms.
+Despite promising results, our work has also revealed limitations of the approximate approaches - in the more complex communities the sensitivity of detection dropped significantly, though it was partly rescued by the use of a decision cut-off based on inter-quartile ranges.   We are currently exploring this phenomenon and whether it will have a significant impact on metagenomic assembly. It is likely that many of the repeats missed by the approximate procedure are small and local in nature and could be resolved through other means.  It is also possible that other approaches for outlier detection would be more effective in restoring the sensitivity of detection. 
 
 \section{Conclusion}
-In this work, we show how approximate betweenness centrality can be used to identify inter-genome repeats. We explored two algorithms, one based on sampling shortest paths in a graph and other based on sampling nodes in a graph. Application of both these algorithms to repeat detection problem provided accurate and fast results. We explore how various parameters such as number of sampled nodes and filtering criteria to mark a node as repeat affects the accuracy of repeat detection. We are planning to use these techniques for repeat detection in our future metagenomic assembler. 
+Here we have demonstrated that approximate betweenness centrality approaches can be effectively used to detect repeats in metagenomic assemblies.  These approaches run in a fraction of the time needed to exactly compute betweenness centrality with only a small loss of accuracy in repeat detection. We currently plan to incorporate such algorithms in the Bambus scaffolding software in order to improve its efficiency, and also plan to further develop the repeat detection algorithms in order to improve their sensitivity in complex graphs. 
 \bibliography{manuscript}{}
 \bibliographystyle{abbrv}
 
