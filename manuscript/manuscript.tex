@@ -73,9 +73,17 @@
 \tocauthor{Authors' Instructions}
 \maketitle
 
+% I'll redo the abstract on Monday, but broadly the points are:
+% 1. inter-/intra-genomic repeats are the main reason assembly is complicated
+% 2. in a metagenomic context repeats are not easy to find due to uneven coverage and confounding effect of strain variants
+% 3. centrality has been proposed as a solution to this problem, but the original algorithms used are inefficient
+% 4. Here we explore the use of approximate centrality measures and show that repeats can be accurately and efficiently detected.
 
 \begin{abstract}
-Assembling metagenomic data is a challenging task due to several reasons. One of the reasons that complicates assembly is the sequences shared between the genomes of multiple organisms. Such regions in genomes are called repeats. Repeats make assembly difficult because they link the unrelated sections of genomes. It has been shown that the number of reconstructions of genome grows exponentially with repeats. Existing approaches to identify repeats are inefficient and do not scale well as size of data increases. We propose an application of a core concept in social network analysis called betweenness centrality to metagenomic data to identify inter-genomic repeats. We show how approximation algorithms for betweenness centrality can be useful to design a faster approach to identify inter-genomic repeats accurately. 
+Assembling genomic data is challenging due in large part to the presence of repetitive regions.
+This issue is compounded in metagenomic datasets due to uneven coverages and the presence of conserved genomic regions found in distantly related organisms.
+Centrality has been proposed as a solution to the problem of identify inter-genomic repeats, but the original algorithms used are inefficient.
+Here we explore the use of approximate centrality measures and show that repeats can be accurately and efficiently detected.
 \keywords{Metagenomics, Algorithms, Centrality, Graph}
 \end{abstract}
 
