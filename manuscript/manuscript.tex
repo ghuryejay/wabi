@@ -87,7 +87,7 @@ The assembly of metagenomics data, the sequences of DNA recovered from an enviro
 Repetitive sequences pose a major challenge when assembling isolated genomes.
 It has been shown that the number of reconstructions grow exponentially with the number of repeats making it computationally infeasible to find one correct solution for assembly\cite{kingsford}.
 The effect of repeats on assembly is exacerbated in metagenomic datasets due to the presence of conserved regions of the genome linking together distantly related organisms.
-To tackle the problem of identifying these inter-genomic repeats, several assemblers have used the notion of network centrality to find repeats within the assembly graph (Figure \ref{fig:es_mix}).
+To tackle the problem of identifying these inter-genomic repeats, several assemblers have used the notion of network centrality to find repeats within the assembly graph (Fig. \ref{fig:es_mix}).
 For example, Bambus2\cite{bambus} uses betweenness centrality to find \emph{central} nodes in the graph.
 The drawback of their approach is the expensive calculation of betweenness centrality by computing all-pair shortest paths.
 This computation is impractical when applied to the large assembly graphs typically encountered.
@@ -97,7 +97,7 @@ To overcome this drawback, we explore the application of approximate and paralle
 \centering
 \includegraphics[width=0.70\textwidth]{es_mix_200kb_k21.png}
 \caption{Assembly graph of a simulated community consisting of 200 Kbp subsets of \textit{Escherichia coli} str. K-12 MG1655 and \textit{Staphylococcus aureus}.  Nodes are colored and sized based on their relative betweenness centrality. The highlighted nodes are inter-genomic repeats whose deletion would separate the graph. Note that the betweenness centrality measure correctly identifies these nodes.}
-\label{fig:sampled_nodes}
+\label{fig:es_mix}
 \end{figure*}
 
 \section{Related Work}
