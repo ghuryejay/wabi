@@ -87,7 +87,7 @@ The assembly of metagenomics data, the sequences of DNA recovered from an enviro
 Repetitive sequences pose a major challenge when assembling isolated genomes.
 It has been shown that the number of reconstructions grow exponentially with the number of repeats making it computationally infeasible to find one correct solution for assembly\cite{kingsford}.
 The effect of repeats on assembly is exacerbated in metagenomic datasets due to the presence of conserved regions of the genome linking together distantly related organisms.
-To tackle the problem of identifying these inter-genomic repeats, several assemblers have used the notion of network centrality to find repeats within the assembly graph.
+To tackle the problem of identifying these inter-genomic repeats, several assemblers have used the notion of network centrality to find repeats within the assembly graph (Figure \ref{fig:es_mix}).
 For example, Bambus2\cite{bambus} uses betweenness centrality to find \emph{central} nodes in the graph.
 The drawback of their approach is the expensive calculation of betweenness centrality by computing all-pair shortest paths.
 This computation is impractical when applied to the large assembly graphs typically encountered.
@@ -95,7 +95,7 @@ To overcome this drawback, we explore the application of approximate and paralle
 
 \begin{figure*}[htbp]
 \centering
-\includegraphics[width=0.60\textwidth]{es_mix_200kb_k21.png}
+\includegraphics[width=0.70\textwidth]{es_mix_200kb_k21.png}
 \caption{Assembly graph of a simulated community consisting of 200 Kbp subsets of \textit{Escherichia coli} str. K-12 MG1655 and \textit{Staphylococcus aureus}.  Nodes are colored and sized based on their relative betweenness centrality. The highlighted nodes are inter-genomic repeats whose deletion would separate the graph. Note that the betweenness centrality measure correctly identifies these nodes.}
 \label{fig:sampled_nodes}
 \end{figure*}
@@ -103,17 +103,17 @@ To overcome this drawback, we explore the application of approximate and paralle
 \section{Related Work}
 
 \subsection*{Betweenness Centrality}
-In graph theory and network analysis, indicators of centrality identify the most important vertices within a graph. Several metrics to measure centrality have been proposed. We make use of betweenness centrality. For a particular node, betweenness centrality is equal to the number of shortest paths from all vertices to all others that pass through that node. Formally, for a node $v$, it is defined by following expression:
+In network analysis, metrics of centrality are used to identify the most important nodes within a graph. Several metrics to measure centrality have been proposed, but in this work, we use betweenness centrality. The betweenness centrality of a particular node is equal to the number of shortest paths from all nodes to all others that pass through that node. Formally, for a node $v$, it is defined by following expression:
 
 $$g(v) = \sum_{s \neq t \neq v} \frac{\sigma_{st}(v)}{\sigma_{st}}$$
 
 where $\sigma_{st}$ is the total number of shortest paths from node $s$ to node $t$ and $\sigma_{st}(v)$ is the number of those paths passing through $v$.
 
-Brandes\cite{brandes} gives an exact algorithm for computing betweenness centrality of all the nodes that is based on solving a single source shortest path (SSSP) problem for each node. An SSSP computation from $s$ produces a directed acyclic graph (DAG) encoding all shortest paths starting at $s$.   The contributions of these paths to the betweenness counters can be computed in linear time using backward aggregation. Brandes algorithm calculates $\sigma_{st}$  simultaneously with shortest path calculations: $\sigma_{ss} = 1$ and for $s \neq t, \sigma_{st} = \sum_{v \in pred(t)} \sigma_{sv}$ where $pred(t)$ is a collection of the immediate predecessors of  $t$ on every shortes path ending at $t$. In a subsequent aggregation phase, nodes are procesed by non-decreasing distance from $s$. So we have: 
+Brandes\cite{brandes} gives an exact algorithm for computing betweenness centrality of all the nodes that is based on solving a single-source shortest path (SSSP) problem for each node. A SSSP computation from $s$ produces a directed acyclic graph (DAG) encoding all shortest paths starting at $s$. The contributions of these paths to the betweenness counters can be computed in linear time using backward aggregation. Brandes algorithm calculates $\sigma_{st}$  simultaneously with shortest path calculations: $\sigma_{ss} = 1$ and for $s \neq t, \sigma_{st} = \sum_{v \in pred(t)} \sigma_{sv}$ where $pred(t)$ is a collection of the immediate predecessors of  $t$ on every shortes path ending at $t$. In a subsequent aggregation phase, nodes are processed by non-decreasing distance from $s$. So we have: 
 $$\delta_{s}(v) = \sum_{w \in succ(v)} \frac{\sigma_{sv}}{\sigma_{sw}}(1+\delta_{s}(w))$$
 
 where $\delta_{s}(v) = \frac{\sigma_{st}(v)}{\sigma_{st}}$ and $succ(v)$ is an immediate successor of $v$  in the shortest path DAG.   
-This algorithm takes time $\Theta(mn)$ for unit edge weight graphs and $\Theta(mn + n^{2}log(n))$ for weighted graphs. This algorithm does not scale well with large networks with millions of nodes and edges. Bader and Madduri\cite{bader} provide a massively parallel implementation of the exact algorithm. However this approach scales to about a few million nodes and may not be fast enough for larger assembly graphs. 
+This algorithm takes time $\Theta(mn)$ for unit edge weight graphs and $\Theta(mn + n^{2}log(n))$ for weighted graphs. This algorithm does not scale well with large networks with millions of nodes and edges. Bader and Madduri\cite{bader} provide a massively parallel implementation of the exact algorithm, but scales in practice to only a few million nodes, limiting its application to larger metagenomic assembly graphs that exceed million of nodes.
 
 \subsection*{Betweenness Centrality Based on Sampling Nodes}
 Due to scalability limitations of exact betweenness centrality, several approximation algorithms for betweenness centrality have been proposed. Bader and Pich\cite{bp} provide an approximation algorithm by choosing a subset of $k$ starting nodes called pivots and using same aggregation strategy as Brandes algorithm. However, this algorithm overestimates the centrality of some unimportant nodes which are nearer to pivots. The approximation algorithm proposed by Geisberger et al. \cite{sanders} overcomes this drawback by changing the scheme for aggregating betweenness contributions so that nodes nearer to pivots are not unduly profited. The algorithm starts with the sample of $k$ nodes from $|V| = n$ nodes in graph. In each iteration, it chooses one of $2n$ shortest path at random. Here there are $2n$ sample shortest paths because algorithm can do forward search from $s \in V$ or backward search from $t \in V$ and each $s$ and $t$ can have $n$ values. Let $\delta_{P}(v)$ be the contribution received by node $v$ due to shortest path $P$. It can be shown that \cite{sanders} due to all shortest paths $P$ on which $v$ lies, $v$ receives contribution 
@@ -125,8 +125,6 @@ $$\delta(v) := \delta_{t}(v) := \sum_{s \in V}\sum \{\delta_{P}(v):  P \in SP_{s
 due to a backward search. 
 
 This algorithm is efficiently implemented by modifying original aggregation scheme of Brandes algorithm so that the nodes near the sampled node will not receive high centrality score. Runtime of the algorithm largely depends on the size of the sample we choose. However,there is a tradeoff between size of sample and accuracy of centrality detection.  
-
-
 
 
 \subsection*{Betweenness Centrality Based on Sampling Shortest Paths}
