@@ -165,7 +165,7 @@ A $k$-mer size of 55 was chosen for the initial creation of the De Bruijn graph.
 \label{tab:composition}
 \end{table}
 
-In addition to the simulated metagenomic assembly graphs, we evaluate the runtimes of the two approximation algorithms for betweenness centrality on a human stool metagenomic sample. This graph has 3,797,425 nodes and 2,970,379 edges. We compared the runtime of Bambus2's repeat detection module on this data with the runtime of approximate betweenness centrality algorithms.  
+In addition to the simulated metagenomic assembly graphs, we evaluate the runtimes of the two approximation algorithms for betweenness centrality on a human stool metagenomic sample. This graph has 3,797,425 nodes and 2,970,379 edges. We compared the runtime of Bambus 2's repeat detection module on this data with the runtime of approximate betweenness centrality algorithms.  
 
 \subsection*{Evaluation}
 %We evaluate the effect of using approximation algorithms for betweenness centrality on finding inter-genome repeats using the simulated datasets described above.
@@ -190,7 +190,7 @@ We repeat each algorithm 10 times and report the averge results.
 
 
 \subsection*{Cutoff Criteria For Identifying Repeats}
-Centrality algorithms provide numeric estimates for the centrality of each node, values from which we can infer whether a graph node represents a repeat. In Bambus2~\cite{bambus} repeats were defined as nodes with a centrality score larger than three standard deviations from the mean centrality of the nodes in the graph. This strategy implicitly assumes the distribution of centrality values in the graph to follow a normal distribution.  We use the same definition here and also explore the use of an alternate statistic -- the  \textit{interquartile range(IQR)}. Let $Q_{1}$,$Q_{2}$, and $Q_{3}$ denote the lower, middle and upper quartiles respectively. IQR can be defined as the difference between the upper and lower quartile. So, $IQR = Q_{3} - Q_{1}$. To identify repeats we simply mark  all the nodes with centrality values larger than $Q_{3} + 1.5*IQR$. This latter approach no longer assumes that the centrality values are normally distributed. 
+Centrality algorithms provide numeric estimates for the centrality of each node, values from which we can infer whether a graph node represents a repeat. In Bambus 2~\cite{bambus} repeats were defined as nodes with a centrality score larger than three standard deviations from the mean centrality of the nodes in the graph. This strategy implicitly assumes the distribution of centrality values in the graph to follow a normal distribution.  We use the same definition here and also explore the use of an alternate statistic -- the  \textit{interquartile range(IQR)}. Let $Q_{1}$,$Q_{2}$, and $Q_{3}$ denote the lower, middle and upper quartiles respectively. IQR can be defined as the difference between the upper and lower quartile. So, $IQR = Q_{3} - Q_{1}$. To identify repeats we simply mark  all the nodes with centrality values larger than $Q_{3} + 1.5*IQR$. This latter approach no longer assumes that the centrality values are normally distributed. 
 
 \subsection*{Implementation}
 We investigate the performance of approximate betweenness centrality algorithms on the metagenomic assembly graphs using the implementations provided by \textsc{NetworKit}\cite{networkit} library. \textsc{NetworKit} contains efficient and parallel implementations of a collection of graph algorithms.
