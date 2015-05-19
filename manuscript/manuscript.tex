@@ -129,9 +129,9 @@ This algorithm is efficiently implemented by modifying original aggregation sche
 
 \subsection*{Betweenness Centrality Based on Sampling Shortest Paths}
 Another approximation algorithm was proposed by Matteo et al. \cite{matteo} based on randomized sampling of shortest paths and offer probabilistic guarantees on the quality of approximation. This algorithm guarantees that all approximate values of betweenness for all vertices are within an additive factor $\epsilon \in (0,1)$ from the real values with probability at least $1-\delta$. To derive bounds on sample size, results from VC dimension theory\cite{vc} are used. The main advantage of this algorithm is that the sample size does not depend on the size of the graph, but only on the maximum number vertices in a shortest path which is called \textit{vertex diameter}. The sample size $r$ of shortest paths is found out with the help of $VD(G)$ as follows:
-\begin{equation} \label{sample_size_algo}
+$$
 r = \frac{c}{\epsilon^{2}}(\left\lfloor{log_{2}(VD(G) - 2)}\right\rfloor + 1 + ln\frac{1}{\delta})
-\end{equation} 
+$$ 
 where $c$ is a constant with value $0.5$. 
 
 The algorithm estimates the vertex diameter of the graph using a simple $2-$approximation algorithm. The shortest paths are sampled using weighted random sampling. The runtime of this algorithm is dominated by the computation of shortest path at each step which takes time $O(|V| + |E|)$ for unweighted graphs (BFS) and $O(|E| + |V|log|V|)$ otherwise (Dijkstra's algorithm). This is multiplied by $r$ for $r$ iterations to obtain final complexity.
